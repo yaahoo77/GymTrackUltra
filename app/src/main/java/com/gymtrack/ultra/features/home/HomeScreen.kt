@@ -1,7 +1,15 @@
 package com.gymtrack.ultra.features.home
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,12 +27,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -44,14 +60,22 @@ import com.gymtrack.ultra.ui.components.GradientProgressBar
 import com.gymtrack.ultra.ui.components.GtCard
 import com.gymtrack.ultra.ui.components.GtIcons
 import com.gymtrack.ultra.ui.components.GtTopBar
+import com.gymtrack.ultra.ui.components.Iskra
 import com.gymtrack.ultra.ui.components.NeonButton
 import com.gymtrack.ultra.ui.components.SectionTitle
 import com.gymtrack.ultra.ui.components.SkeletonBlock
 import com.gymtrack.ultra.ui.components.StreakFlame
+import com.gymtrack.ultra.ui.components.appear
+import com.gymtrack.ultra.ui.components.rememberAppearRegistry
+import com.gymtrack.ultra.ui.components.rememberCountUp
+import com.gymtrack.ultra.ui.components.rememberGtHaptics
+import com.gymtrack.ultra.ui.components.shine
 import com.gymtrack.ultra.ui.rank.MuscleRankRow
 import com.gymtrack.ultra.ui.rank.RankEmblem
 import com.gymtrack.ultra.ui.rank.palette
 import com.gymtrack.ultra.ui.theme.GtColors
+import com.gymtrack.ultra.ui.theme.LocalGtMotion
+import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(
@@ -99,17 +123,26 @@ private fun HomeList(
     onOpenRanks: () -> Unit,
     onOpenStreak: () -> Unit,
 ) {
+    val appearRegistry = rememberAppearRegistry()
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        state.activeSession?.let { active ->
-            item(key = "active") { ActiveSessionCard(active, onResume) }
+        var order = 0
+        // Karty wjeżdżają po kolei przy pierwszym pokazaniu ekranu.
+        fun card(key: String, content: @Composable () -> Unit) {
+            val index = order++
+            item(key = key) { Box(Modifier.appear(appearRegistry, key, index)) { content() } }
         }
-        item(key = "rank") { AccountRankCard(state.level, onOpenRanks) }
+
+        card("iskra") { IskraGreeting(state) }
+        state.activeSession?.let { active ->
+            card("active") { ActiveSessionCard(active, onResume) }
+        }
+        card("rank") { AccountRankCard(state.level, onOpenRanks) }
         state.today?.let { today ->
-            item(key = "today") {
+            card("today") {
                 TodayCard(
                     card = today,
                     hasActive = state.activeSession != null,
@@ -119,13 +152,13 @@ private fun HomeList(
                 )
             }
         }
-        item(key = "streak") { StreakCard(state.streak, state.week, onOpenStreak) }
+        card("streak") { StreakCard(state.streak, state.week, onOpenStreak) }
         if (state.quests.isNotEmpty()) {
-            item(key = "quests") { QuestsCard(state.quests) }
+            card("quests") { QuestsCard(state.quests) }
         }
-        item(key = "muscles") { MusclesPreview(state.topMuscles, onOpenRanks) }
+        card("muscles") { MusclesPreview(state.topMuscles, onOpenRanks) }
         if (state.recentRecords.isNotEmpty()) {
-            item(key = "records") { RecordsCard(state) }
+            card("records") { RecordsCard(state) }
         }
     }
 }
@@ -155,7 +188,13 @@ private fun AccountRankCard(level: LevelProgress, onClick: () -> Unit) {
     val palette = level.rank.tier.palette()
     GtCard(tint = palette.text, onClick = onClick, onClickLabel = "Otwórz rangi", contentPadding = PaddingValues(14.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            RankEmblem(rank = level.rank, size = 64.dp, contentDescription = "Ranga konta ${level.rank.label}")
+            RankEmblem(
+                rank = level.rank,
+                size = 64.dp,
+                contentDescription = "Ranga konta ${level.rank.label}",
+                modifier = Modifier.shine(periodMillis = 5200, delayMillis = 900),
+            )
+            val xp = rememberCountUp(level.xpIntoLevel)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(level.rank.label, style = MaterialTheme.typography.titleMedium, color = palette.text, modifier = Modifier.weight(1f))
@@ -163,7 +202,7 @@ private fun AccountRankCard(level: LevelProgress, onClick: () -> Unit) {
                 }
                 GradientProgressBar(progress = level.fraction, height = 6.dp, color = palette.text)
                 Text(
-                    if (level.isMaxLevel) "Maksymalny poziom" else "${level.xpIntoLevel} / ${level.xpForNextLevel} XP do LVL ${level.level + 1}",
+                    if (level.isMaxLevel) "Maksymalny poziom" else "$xp / ${level.xpForNextLevel} XP do LVL ${level.level + 1}",
                     style = MaterialTheme.typography.bodySmall,
                     color = GtColors.TextSecondary,
                 )
@@ -218,7 +257,7 @@ private fun TodayCard(
         when {
             hasActive -> NeonButton("WRÓĆ DO TRENINGU", onClick = onResume, leadingIcon = GtIcons.Play, modifier = Modifier.fillMaxWidth())
             card.isToday && !card.doneToday ->
-                NeonButton("START WORKOUT", onClick = onStart, leadingIcon = GtIcons.Play, modifier = Modifier.fillMaxWidth())
+                NeonButton("START WORKOUT", onClick = onStart, leadingIcon = GtIcons.Play, modifier = Modifier.fillMaxWidth().shine(delayMillis = 1400))
             else -> GhostButton(
                 if (card.doneToday) "Trenuj jeszcze raz" else "Zrób dziś mimo to",
                 onClick = onStart,
@@ -233,9 +272,10 @@ private fun StreakCard(streak: StreakState, week: List<WeekDayUi>, onClick: () -
     GtCard(onClick = onClick, onClickLabel = "Szczegóły serii", verticalSpacing = 12.dp) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             StreakFlame(lit = streak.isLit, size = 40.dp)
+            val count = rememberCountUp(streak.current, durationMillis = 700)
             Column(Modifier.weight(1f)) {
                 Text(
-                    if (streak.isLit) "Seria: ${Formatters.countLabel(streak.current, "trening", "treningi", "treningów")}" else "Rozpal serię",
+                    if (streak.isLit) "Seria: ${Formatters.countLabel(count, "trening", "treningi", "treningów")}" else "Rozpal serię",
                     style = MaterialTheme.typography.titleMedium,
                     color = if (streak.isLit) GtColors.Fire else GtColors.TextPrimary,
                 )
@@ -256,15 +296,28 @@ private fun StreakCard(streak: StreakState, week: List<WeekDayUi>, onClick: () -
 
 @Composable
 internal fun WeekRow(week: List<WeekDayUi>) {
+    val todayPulse = if (LocalGtMotion.current.reduced) {
+        1f
+    } else {
+        val pulse = rememberInfiniteTransition(label = "today")
+        val a by pulse.animateFloat(
+            initialValue = 1f,
+            targetValue = 0.35f,
+            animationSpec = infiniteRepeatable(tween(900, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+            label = "todayAlpha",
+        )
+        a
+    }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         week.forEach { day ->
-            val (bg, border, fg) = when (day.state) {
+            val (bg, baseBorder, fg) = when (day.state) {
                 WeekDayState.DONE -> Triple(GtColors.Fire, GtColors.Fire, GtColors.OnLime)
                 WeekDayState.TODAY_PLANNED -> Triple(GtColors.Surface, GtColors.Lime, GtColors.Lime)
                 WeekDayState.TODAY_REST -> Triple(GtColors.Elevated, GtColors.OutlineStrong, GtColors.TextSecondary)
                 WeekDayState.PLANNED -> Triple(GtColors.Surface, GtColors.OutlineStrong, GtColors.TextSecondary)
                 WeekDayState.REST -> Triple(GtColors.Elevated, GtColors.Elevated, GtColors.TextMuted)
             }
+            val border = if (day.state == WeekDayState.TODAY_PLANNED) baseBorder.copy(alpha = todayPulse) else baseBorder
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -352,5 +405,79 @@ private fun RecordsCard(state: HomeUiState) {
                 Text(value, style = MaterialTheme.typography.titleSmall, color = GtColors.Fire)
             }
         }
+    }
+}
+
+/** Iskra wita, mówi, co dziś w planie; dotknięcie = podskok i kolejna wskazówka. */
+@Composable
+private fun IskraGreeting(state: HomeUiState) {
+    var index by rememberSaveable { mutableIntStateOf(0) }
+    val haptics = rememberGtHaptics()
+    val line = IskraLines.lineAt(state, index)
+    val interaction = remember { MutableInteractionSource() }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(interactionSource = interaction, indication = null, onClickLabel = "Następna wskazówka Iskry") {
+                index++
+                haptics.tick()
+            }
+            .padding(top = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Iskra(mood = line.mood, size = 64.dp, reactKey = index)
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .drawBehind {
+                    val tail = 8.dp.toPx()
+                    val radius = 14.dp.toPx()
+                    drawRoundRect(
+                        color = GtColors.Surface,
+                        topLeft = Offset(tail, 0f),
+                        size = Size(size.width - tail, size.height),
+                        cornerRadius = CornerRadius(radius, radius),
+                    )
+                    val cy = size.height / 2f
+                    val half = 7.dp.toPx()
+                    val path = Path().apply {
+                        moveTo(tail + 1f, cy - half)
+                        lineTo(0f, cy + 2.dp.toPx())
+                        lineTo(tail + 1f, cy + half)
+                        close()
+                    }
+                    drawPath(path, GtColors.Surface)
+                }
+                .padding(start = 22.dp, end = 14.dp, top = 10.dp, bottom = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            if (state.greeting.isNotBlank()) {
+                Text(state.greeting, style = MaterialTheme.typography.labelMedium, color = GtColors.TextSecondary)
+            }
+            TypewriterText(line.text)
+        }
+    }
+}
+
+/** Tekst "wpisywany" literka po literce; miejsce rezerwuje pełny tekst, więc dymek nie skacze. */
+@Composable
+private fun TypewriterText(text: String) {
+    val reduced = LocalGtMotion.current.reduced
+    var shown by remember(text) { mutableIntStateOf(if (reduced) text.length else 0) }
+    LaunchedEffect(text, reduced) {
+        if (reduced) {
+            shown = text.length
+            return@LaunchedEffect
+        }
+        while (shown < text.length) {
+            delay(16)
+            shown = (shown + 1).coerceAtMost(text.length)
+        }
+    }
+    val style = MaterialTheme.typography.bodyLarge
+    Box(Modifier.semantics { contentDescription = text }) {
+        Text(text, style = style, color = Color.Transparent)
+        Text(text.take(shown), style = style, color = GtColors.TextPrimary)
     }
 }

@@ -22,9 +22,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.gymtrack.ultra.ui.theme.LocalGtMotion
 
-private const val OUTER = "M52 6 C60 20 80 32 80 58 C80 80 66 94 50 94 C33 94 20 81 20 62 C20 48 27 40 33 30 C35 38 38 43 43 45 C42 30 45 17 52 6 Z"
-private const val MIDDLE = "M51 34 C57 44 68 52 68 66 C68 80 60 88 50 88 C40 88 32 80 32 69 C32 60 37 55 41 49 C43 54 45 57 48 58 C47 49 48 41 51 34 Z"
-private const val INNER = "M50 58 C54 64 60 68 60 76 C60 83 56 86 50 86 C44 86 40 83 40 77 C40 71 45 66 50 58 Z"
+internal const val FLAME_OUTER = "M52 6 C60 20 80 32 80 58 C80 80 66 94 50 94 C33 94 20 81 20 62 C20 48 27 40 33 30 C35 38 38 43 43 45 C42 30 45 17 52 6 Z"
+internal const val FLAME_MIDDLE = "M51 34 C57 44 68 52 68 66 C68 80 60 88 50 88 C40 88 32 80 32 69 C32 60 37 55 41 49 C43 54 45 57 48 58 C47 49 48 41 51 34 Z"
+internal const val FLAME_INNER = "M50 58 C54 64 60 68 60 76 C60 83 56 86 50 86 C44 86 40 83 40 77 C40 71 45 66 50 58 Z"
 
 /**
  * Płomień serii. Zapalony — migocze i lekko się kołysze; zgaszony — szary i nieruchomy.
@@ -38,7 +38,7 @@ fun StreakFlame(
     boost: Float = 1f,
 ) {
     val paths = remember {
-        listOf(OUTER, MIDDLE, INNER).map { PathParser().parsePathString(it).toPath() }
+        listOf(FLAME_OUTER, FLAME_MIDDLE, FLAME_INNER).map { PathParser().parsePathString(it).toPath() }
     }
     val animate = lit && !LocalGtMotion.current.reduced
     val flicker: Float

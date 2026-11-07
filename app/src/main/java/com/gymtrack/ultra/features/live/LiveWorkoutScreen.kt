@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
@@ -75,6 +76,7 @@ import com.gymtrack.ultra.ui.components.IconSquareButton
 import com.gymtrack.ultra.ui.components.NeonButton
 import com.gymtrack.ultra.ui.components.rememberGtHaptics
 import com.gymtrack.ultra.ui.theme.GtColors
+import com.gymtrack.ultra.ui.theme.LocalGtMotion
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -231,6 +233,25 @@ private fun LiveContent(
     }
     val elapsed = (now - session.startedAt.toEpochMilli()) / 1000
 
+    // Bieżące ćwiczenie = pierwsze z niezaliczonymi seriami. Gdy się zmienia, lista sama do niego dojeżdża.
+    val listState = rememberLazyListState()
+    val reducedMotion = LocalGtMotion.current.reduced
+    val currentIndex = session.exercises.indexOfFirst { !it.isDone }
+    val currentId = session.exercises.getOrNull(currentIndex)?.sessionExerciseId
+    var scrolledTo by rememberSaveable { mutableStateOf<Long?>(null) }
+    LaunchedEffect(currentId) {
+        if (currentId == null || currentId == scrolledTo) return@LaunchedEffect
+        val first = scrolledTo == null
+        scrolledTo = currentId
+        val item = currentIndex + 1 // pozycja 0 to rozgrzewka
+        if (first) {
+            if (currentIndex > 0) listState.scrollToItem(item)
+        } else {
+            delay(650) // chwila na baner "ćwiczenie ukończone"
+            if (reducedMotion) listState.scrollToItem(item) else listState.animateScrollToItem(item)
+        }
+    }
+
     Column(Modifier.fillMaxSize().imePadding()) {
         Column(
             Modifier
@@ -271,6 +292,7 @@ private fun LiveContent(
         }
 
         LazyColumn(
+            state = listState,
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -282,6 +304,7 @@ private fun LiveContent(
                 ExerciseCard(
                     index = index,
                     exercise = exercise,
+                    isCurrent = index == currentIndex,
                     inputRevision = state.inputRevision,
                     onValuesChanged = { set, w, v -> viewModel.onValuesChanged(exercise, set, w, v) },
                     onToggle = { set, w, v -> viewModel.onToggleSet(exercise, set, w, v) },

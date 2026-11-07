@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,9 +31,11 @@ import androidx.compose.ui.unit.dp
 import com.gymtrack.ultra.domain.model.Exercise
 import com.gymtrack.ultra.ui.components.GtIcons
 import com.gymtrack.ultra.ui.components.SectionLabel
+import com.gymtrack.ultra.ui.exercise.ExerciseDemo
+import com.gymtrack.ultra.ui.exercise.ExerciseMotions
 import com.gymtrack.ultra.ui.theme.GtColors
 
-/** Karta techniki: kroki ruchu + bezpieczeństwo. Otwierana z planu i (od Etapu 4) z treningu na żywo. */
+/** Karta techniki: animacja ruchu, kroki i bezpieczeństwo. Otwierana z planu i z treningu na żywo. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TechniqueSheet(
@@ -76,6 +80,19 @@ fun TechniqueSheet(
                     style = MaterialTheme.typography.bodyMedium,
                     color = GtColors.TextSecondary,
                 )
+            }
+
+            if (ExerciseMotions.forId(exercise.id) != null) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(270.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(GtColors.Background)
+                        .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 14.dp),
+                ) {
+                    ExerciseDemo(exercise.id, Modifier.fillMaxSize())
+                }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {

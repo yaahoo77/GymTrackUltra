@@ -3,6 +3,9 @@ package com.gymtrack.ultra.navigation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -21,10 +24,16 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,9 +55,11 @@ import com.gymtrack.ultra.features.ranks.RanksScreen
 import com.gymtrack.ultra.features.statistics.StatsScreen
 import com.gymtrack.ultra.features.workout.PlanDayScreen
 import com.gymtrack.ultra.features.workout.WorkoutPlanScreen
+import com.gymtrack.ultra.ui.components.rememberGtHaptics
 import com.gymtrack.ultra.ui.theme.GtColors
 import com.gymtrack.ultra.ui.theme.GtDurations
 import com.gymtrack.ultra.ui.theme.LocalGtMotion
+import kotlinx.coroutines.launch
 
 @Composable
 fun GymAppScaffold() {
@@ -152,6 +163,7 @@ private fun GymBottomBar(
     currentDestination: NavDestination?,
     onSelect: (TopLevelDestination) -> Unit,
 ) {
+    val haptics = rememberGtHaptics()
     Column {
         HorizontalDivider(color = GtColors.Divider)
         NavigationBar(containerColor = GtColors.Background, tonalElevation = 0.dp) {
@@ -159,8 +171,11 @@ private fun GymBottomBar(
                 val selected = currentDestination.isOnTab(destination)
                 NavigationBarItem(
                     selected = selected,
-                    onClick = { onSelect(destination) },
-                    icon = { Icon(destination.icon, contentDescription = null) },
+                    onClick = {
+                        if (!selected) haptics.tick()
+                        onSelect(destination)
+                    },
+                    icon = { BouncyTabIcon(destination.icon, selected) },
                     label = {
                         Text(
                             text = destination.label,
@@ -172,7 +187,7 @@ private fun GymBottomBar(
                     },
                     modifier = Modifier.semantics { contentDescription = destination.accessibilityLabel },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = GtColors.TextPrimary,
+                        selectedIconColor = GtColors.Lime,
                         selectedTextColor = GtColors.TextPrimary,
                         indicatorColor = Color.Transparent,
                         unselectedIconColor = GtColors.TextMuted,
@@ -196,4 +211,33 @@ fun NavHostController.navigateToTopLevel(destination: TopLevelDestination) {
         launchSingleTop = true
         restoreState = true
     }
+}
+
+/** Ikona zakładki: przy wybraniu podskakuje i "ściska się" jak guma. */
+@Composable
+private fun BouncyTabIcon(icon: ImageVector, selected: Boolean) {
+    val reduced = LocalGtMotion.current.reduced
+    val scale = remember { Animatable(1f) }
+    val lift = remember { Animatable(0f) }
+    var previous by remember { mutableStateOf(selected) }
+    LaunchedEffect(selected) {
+        val becameSelected = selected && !previous
+        previous = selected
+        if (!becameSelected || reduced) return@LaunchedEffect
+        launch {
+            scale.snapTo(0.7f)
+            scale.animateTo(1f, spring(dampingRatio = 0.38f, stiffness = Spring.StiffnessMedium))
+        }
+        lift.animateTo(-5f, tween(120))
+        lift.animateTo(0f, spring(dampingRatio = 0.45f, stiffness = Spring.StiffnessMediumLow))
+    }
+    Icon(
+        icon,
+        contentDescription = null,
+        modifier = Modifier.graphicsLayer {
+            scaleX = scale.value
+            scaleY = scale.value
+            translationY = lift.value * density
+        },
+    )
 }

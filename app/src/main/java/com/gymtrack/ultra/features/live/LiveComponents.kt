@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -68,16 +69,18 @@ import com.gymtrack.ultra.domain.progression.MuscleMap
 import com.gymtrack.ultra.domain.progression.MuscleScoring
 import com.gymtrack.ultra.ui.components.GtIcons
 import com.gymtrack.ultra.ui.components.rememberGtHaptics
+import com.gymtrack.ultra.ui.exercise.ExerciseFigure
 import com.gymtrack.ultra.ui.theme.GtColors
 import com.gymtrack.ultra.ui.theme.LocalGtMotion
 import kotlin.math.cos
 import kotlin.math.sin
 
-/** Karta ćwiczenia w trakcie treningu: nagłówek, "ostatnio", serie, akcje. */
+/** Karta ćwiczenia w trakcie treningu: animacja ruchu, nagłówek, "ostatnio", serie, akcje. */
 @Composable
 internal fun ExerciseCard(
     index: Int,
     exercise: LiveExercise,
+    isCurrent: Boolean,
     inputRevision: Int,
     onValuesChanged: (LiveSet, String, String) -> Unit,
     onToggle: (LiveSet, String, String) -> Unit,
@@ -89,7 +92,11 @@ internal fun ExerciseCard(
     val done = exercise.isDone
     val shape = MaterialTheme.shapes.large
     val borderColor by animateColorAsState(
-        if (done) GtColors.Lime.copy(alpha = 0.55f) else GtColors.Divider,
+        when {
+            done -> GtColors.Lime.copy(alpha = 0.55f)
+            isCurrent -> GtColors.Lime.copy(alpha = 0.32f)
+            else -> GtColors.Divider
+        },
         tween(220),
         label = "cardBorder",
     )
@@ -105,18 +112,42 @@ internal fun ExerciseCard(
         Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(
                 Modifier
-                    .size(32.dp)
-                    .clip(RoundedCornerShape(9.dp))
-                    .background(if (done) GtColors.Lime else GtColors.Elevated),
-                contentAlignment = Alignment.Center,
+                    .size(72.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(GtColors.Background)
+                    .clickable(onClickLabel = "Pokaż ruch: ${exercise.exercise.namePl}", role = Role.Button, onClick = onTechnique),
             ) {
-                if (done) {
-                    Icon(GtIcons.Check, contentDescription = null, tint = GtColors.OnLime, modifier = Modifier.size(18.dp))
-                } else {
-                    Text("${index + 1}", style = MaterialTheme.typography.titleSmall, color = GtColors.TextPrimary)
+                ExerciseFigure(
+                    exerciseId = exercise.exercise.id,
+                    playing = isCurrent && !done,
+                    dimmed = done,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(4.dp),
+                )
+                Box(
+                    Modifier
+                        .padding(4.dp)
+                        .size(20.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (done) GtColors.Lime else GtColors.Elevated),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (done) {
+                        Icon(GtIcons.Check, contentDescription = null, tint = GtColors.OnLime, modifier = Modifier.size(13.dp))
+                    } else {
+                        Text(
+                            "${index + 1}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = if (isCurrent) GtColors.Lime else GtColors.TextPrimary,
+                        )
+                    }
                 }
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                if (isCurrent && !done) {
+                    Text("TERAZ", style = MaterialTheme.typography.labelMedium, color = GtColors.Lime)
+                }
                 Text(exercise.exercise.namePl, style = MaterialTheme.typography.titleMedium, color = GtColors.TextPrimary)
                 Text(
                     "${exercise.targetLabel} · przerwa ${exercise.restSeconds} s",

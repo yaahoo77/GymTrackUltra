@@ -22,6 +22,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gymtrack.ultra.ui.components.shine
 import com.gymtrack.ultra.BuildConfig
 import com.gymtrack.ultra.core.format.Formatters
 import com.gymtrack.ultra.domain.progression.LevelProgress
@@ -132,6 +133,7 @@ private fun RankCard(level: LevelProgress, completedWorkouts: Int) {
                 rank = level.rank,
                 size = 84.dp,
                 contentDescription = "Ranga ${level.rank.label}",
+                modifier = Modifier.shine(periodMillis = 5200),
             )
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(level.rank.label, style = MaterialTheme.typography.titleMedium, color = palette.text)

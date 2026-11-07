@@ -46,6 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gymtrack.ultra.ui.components.IskraMood
+import com.gymtrack.ultra.ui.components.Iskra
 import com.gymtrack.ultra.core.format.Formatters
 import com.gymtrack.ultra.domain.model.RankUp
 import com.gymtrack.ultra.domain.model.WorkoutResult
@@ -130,6 +132,15 @@ private fun SummaryStep(result: WorkoutResult, onNext: () -> Unit) {
             xpShown.animateTo(result.xpTotal.toFloat(), tween(900, easing = FastOutSlowInEasing))
         }
     }
+    var jumps by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        if (!reduced) {
+            repeat(3) {
+                delay(520)
+                jumps++
+            }
+        }
+    }
     val levelUp = result.levelAfter.level > result.levelBefore.level
 
     Box(Modifier.fillMaxSize()) {
@@ -140,18 +151,23 @@ private fun SummaryStep(result: WorkoutResult, onNext: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item {
-                Box(
-                    Modifier
-                        .size(96.dp)
-                        .graphicsLayer {
-                            scaleX = badge.value
-                            scaleY = badge.value
-                        }
-                        .clip(CircleShape)
-                        .background(GtColors.Lime),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(GtIcons.Check, contentDescription = null, tint = GtColors.OnLime, modifier = Modifier.size(52.dp))
+                // Iskra skacze z radości, w rogu "wbija się" znaczek zaliczenia.
+                Box(Modifier.size(116.dp)) {
+                    Iskra(mood = IskraMood.CHEER, size = 104.dp, reactKey = jumps, modifier = Modifier.align(Alignment.Center))
+                    Box(
+                        Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(38.dp)
+                            .graphicsLayer {
+                                scaleX = badge.value
+                                scaleY = badge.value
+                            }
+                            .clip(CircleShape)
+                            .background(GtColors.Lime),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(GtIcons.Check, contentDescription = null, tint = GtColors.OnLime, modifier = Modifier.size(22.dp))
+                    }
                 }
             }
             item {

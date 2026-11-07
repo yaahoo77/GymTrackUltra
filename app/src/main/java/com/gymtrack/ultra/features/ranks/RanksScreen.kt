@@ -1,5 +1,6 @@
 package com.gymtrack.ultra.features.ranks
 
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -43,6 +44,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import com.gymtrack.ultra.ui.components.rememberAppearRegistry
+import com.gymtrack.ultra.ui.components.appear
+import com.gymtrack.ultra.ui.components.shine
 import com.gymtrack.ultra.domain.model.PlanDay
 import com.gymtrack.ultra.domain.model.ProgressSnapshot
 import com.gymtrack.ultra.domain.progression.AccountRank
@@ -168,12 +172,13 @@ private fun MusclesTab(state: RanksUiState, onOpenMuscle: (MuscleRank) -> Unit) 
     val muscles = state.progress.gamification.muscles.sortedWith(
         compareByDescending<MuscleRank> { it.isRanked }.thenByDescending { it.progress.totalPoints },
     )
+    val appearRegistry = rememberAppearRegistry()
     LazyColumn(
         Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        item(key = "account") { AccountCard(state.progress.level) }
+        item(key = "account") { Box(Modifier.appear(appearRegistry, "account", 0)) { AccountCard(state.progress.level) } }
         item(key = "title") {
             Text(
                 "Każda partia ma własną rangę. Rośnie z seriami z planu i z pobitymi rekordami.",
@@ -182,8 +187,10 @@ private fun MusclesTab(state: RanksUiState, onOpenMuscle: (MuscleRank) -> Unit) 
                 modifier = Modifier.padding(vertical = 4.dp),
             )
         }
-        items(muscles, key = { it.muscle.name }) { rank ->
-            MuscleRankRow(rank, onClick = { onOpenMuscle(rank) })
+        itemsIndexed(muscles, key = { _, it -> it.muscle.name }) { index, rank ->
+            Box(Modifier.appear(appearRegistry, rank.muscle.name, index + 1)) {
+                MuscleRankRow(rank, onClick = { onOpenMuscle(rank) })
+            }
         }
     }
 }
@@ -193,7 +200,12 @@ private fun AccountCard(level: LevelProgress) {
     val palette = level.rank.tier.palette()
     GtCard(tint = palette.text) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            RankEmblem(rank = level.rank, size = 92.dp, contentDescription = "Ranga konta ${level.rank.label}")
+            RankEmblem(
+                rank = level.rank,
+                size = 92.dp,
+                contentDescription = "Ranga konta ${level.rank.label}",
+                modifier = Modifier.shine(periodMillis = 5200),
+            )
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Ranga konta", style = MaterialTheme.typography.bodySmall, color = GtColors.TextSecondary)
                 Text(level.rank.label, style = MaterialTheme.typography.headlineSmall, color = palette.text)
@@ -237,7 +249,11 @@ private fun MuscleSheet(rank: MuscleRank, names: Map<String, String>, onDismiss:
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            RankEmblem(rank = if (ranked) rank.progress.rank else null, size = 128.dp)
+            RankEmblem(
+                rank = if (ranked) rank.progress.rank else null,
+                size = 128.dp,
+                modifier = Modifier.shine(enabled = ranked, periodMillis = 3600, delayMillis = 400),
+            )
             Text(rank.muscle.label, style = MaterialTheme.typography.headlineMedium)
             Text(if (ranked) rank.progress.rank.label else "BEZ RANGI", style = MaterialTheme.typography.titleMedium, color = palette.text)
             if (ranked && !rank.progress.isMax) {

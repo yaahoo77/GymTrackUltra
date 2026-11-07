@@ -1,5 +1,7 @@
 package com.gymtrack.ultra.features.workout
 
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +27,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gymtrack.ultra.ui.exercise.ExerciseFigure
+import com.gymtrack.ultra.ui.components.rememberAppearRegistry
+import com.gymtrack.ultra.ui.components.appear
 import com.gymtrack.ultra.core.format.Formatters
 import com.gymtrack.ultra.domain.model.PlanDay
 import com.gymtrack.ultra.ui.components.GtCard
@@ -40,6 +45,7 @@ fun WorkoutPlanScreen(
     viewModel: WorkoutPlanViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val appearRegistry = rememberAppearRegistry()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -55,8 +61,10 @@ fun WorkoutPlanScreen(
         if (state.isLoading) {
             items(3) { SkeletonBlock(height = 150.dp) }
         } else {
-            items(state.days, key = { it.id }) { day ->
-                PlanDayCard(day = day, isToday = day.dayOfWeek == state.today, onClick = { onOpenDay(day.id) })
+            itemsIndexed(state.days, key = { _, it -> it.id }) { index, day ->
+                Box(Modifier.appear(appearRegistry, day.id, index)) {
+                    PlanDayCard(day = day, isToday = day.dayOfWeek == state.today, onClick = { onOpenDay(day.id) })
+                }
             }
             item(key = "recovery") { RecoveryCard() }
         }
@@ -82,6 +90,29 @@ private fun PlanDayCard(day: PlanDay, isToday: Boolean, onClick: () -> Unit) {
                 )
             }
             Icon(GtIcons.ChevronRight, contentDescription = null, tint = GtColors.TextSecondary, modifier = Modifier.size(20.dp))
+        }
+        // Podgląd ruchów: w dzisiejszym dniu postacie ćwiczą (każda z małym przesunięciem), w pozostałych stoją.
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            val shown = day.exercises.take(6)
+            shown.forEachIndexed { i, item ->
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .aspectRatio(1f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(GtColors.Background),
+                ) {
+                    ExerciseFigure(
+                        exerciseId = item.exercise.id,
+                        playing = isToday,
+                        startDelayMillis = i * 320L,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(2.dp),
+                    )
+                }
+            }
+            repeat(6 - shown.size) { Box(Modifier.weight(1f)) }
         }
         Text(
             text = day.exercises.joinToString(" · ") { it.exercise.namePl },

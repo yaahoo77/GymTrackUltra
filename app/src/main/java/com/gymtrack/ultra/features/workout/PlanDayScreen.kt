@@ -1,5 +1,6 @@
 package com.gymtrack.ultra.features.workout
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,11 +24,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gymtrack.ultra.ui.components.shine
 import com.gymtrack.ultra.core.format.Formatters
 import com.gymtrack.ultra.domain.model.PlanDay
 import com.gymtrack.ultra.domain.model.PlanExercise
@@ -38,6 +42,7 @@ import com.gymtrack.ultra.ui.components.IconSquareButton
 import com.gymtrack.ultra.ui.components.NeonButton
 import com.gymtrack.ultra.ui.components.SectionLabel
 import com.gymtrack.ultra.ui.components.SkeletonBlock
+import com.gymtrack.ultra.ui.exercise.ExerciseFigure
 import com.gymtrack.ultra.ui.theme.GtColors
 
 @Composable
@@ -85,8 +90,9 @@ fun PlanDayScreen(
                     onClick = viewModel::startWorkout,
                     leadingIcon = GtIcons.Play,
                     modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .shine(enabled = !hasActive, delayMillis = 1600),
                 )
             }
             val open = current.day.exercises.firstOrNull { it.exercise.id == openExerciseId }
@@ -161,11 +167,34 @@ private fun ExerciseRow(index: Int, item: PlanExercise, onClick: () -> Unit) {
     GtCard(
         onClick = onClick,
         onClickLabel = "Pokaż technikę: ${item.exercise.namePl}",
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(12.dp),
         verticalSpacing = 0.dp,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            DayCodeBadge(code = "${index + 1}", highlighted = false)
+            Box(
+                Modifier
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(GtColors.Background),
+            ) {
+                ExerciseFigure(
+                    exerciseId = item.exercise.id,
+                    startDelayMillis = index * 380L,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(4.dp),
+                )
+                Box(
+                    Modifier
+                        .padding(4.dp)
+                        .size(18.dp)
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(GtColors.Elevated),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("${index + 1}", style = MaterialTheme.typography.labelSmall, color = GtColors.TextPrimary)
+                }
+            }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(item.exercise.namePl, style = MaterialTheme.typography.titleMedium, color = GtColors.TextPrimary)
                 Text(

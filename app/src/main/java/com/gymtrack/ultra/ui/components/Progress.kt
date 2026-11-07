@@ -1,15 +1,19 @@
 package com.gymtrack.ultra.ui.components
 
-import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Size
@@ -24,8 +28,8 @@ import com.gymtrack.ultra.ui.theme.GtColors
 import com.gymtrack.ultra.ui.theme.LocalGtMotion
 
 /**
- * Pasek postępu z gradientem mint → lime. Każda zmiana wartości jedzie springiem,
- * przy ograniczonym ruchu — natychmiast.
+ * Pasek postępu z gradientem mint → lime. Przy pierwszym pokazaniu napełnia się od zera,
+ * każda kolejna zmiana jedzie sprężyną; przy ograniczonym ruchu — natychmiast.
  */
 @Composable
 fun GradientProgressBar(
@@ -37,13 +41,18 @@ fun GradientProgressBar(
     color: Color? = null,
 ) {
     val reduced = LocalGtMotion.current.reduced
-    val spec: AnimationSpec<Float> = if (reduced) {
-        snap()
-    } else {
-        spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow)
-    }
     val target = progress.coerceIn(0f, 1f)
-    val animated by animateFloatAsState(targetValue = target, animationSpec = spec, label = "progress")
+    // Pierwsze pokazanie: pasek napełnia się od zera; kolejne zmiany jadą sprężyną.
+    val anim = remember { Animatable(if (reduced) target else 0f) }
+    var first by remember { mutableStateOf(true) }
+    LaunchedEffect(target, reduced) {
+        when {
+            reduced -> anim.snapTo(target)
+            first -> anim.animateTo(target, tween(900, delayMillis = 120, easing = FastOutSlowInEasing))
+            else -> anim.animateTo(target, spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow))
+        }
+        first = false
+    }
 
     Canvas(
         modifier = modifier
@@ -51,6 +60,7 @@ fun GradientProgressBar(
             .height(height)
             .semantics { progressBarRangeInfo = ProgressBarRangeInfo(target, 0f..1f) },
     ) {
+        val animated = anim.value // odczyt w fazie rysowania — bez rekompozycji co klatkę
         val radius = CornerRadius(size.height / 2f, size.height / 2f)
         drawRoundRect(color = trackColor, cornerRadius = radius)
         if (animated > 0f) {
