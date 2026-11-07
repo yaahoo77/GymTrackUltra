@@ -161,6 +161,7 @@ class LiveWorkoutViewModel @Inject constructor(
 
     fun onDiscard() {
         val session = uiState.value.session ?: return
+        finishing.value = true
         viewModelScope.launch {
             try {
                 rest.clear()
@@ -169,6 +170,7 @@ class LiveWorkoutViewModel @Inject constructor(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                finishing.value = false
                 _events.send(LiveEvent.Message("Nie udało się odrzucić treningu."))
             }
         }

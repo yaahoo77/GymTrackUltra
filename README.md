@@ -4,25 +4,29 @@ Natywna aplikacja treningowa na Androida — Kotlin, Jetpack Compose, Material 3
 Styl **Cyber Lime Dark**: prawie czarne tło, jeden neonowy akcent, duże liczby, satysfakcjonujące mikrointerakcje.
 Działa w 100% offline, bez konta, wszystkie dane zostają na telefonie.
 
-## Stan projektu
+## Stan projektu (v0.4)
 
 | Etap | Zakres | Status |
 |---|---|---|
-| 1 | Koncepcja wizualna, design system | ✅ (kanwa Design) |
-| 2 | Makiety kluczowych ekranów | ✅ (kanwa Design, część klikalna) |
-| 3 | Modele danych, Room, DataStore, architektura, nawigacja, logika XP / rang / osiągnięć | ✅ ten pakiet |
-| 4 | Pełny UI: onboarding, Live Workout, Rest Timer, Workout Complete | ⏭ następny |
-| 5 | Zapis serii i sesji, przywracanie treningu, timer w tle (foreground service), statystyki z wykresami, eksport/import | ⏭ |
-| 6 | Dopamine engine: haptyka, drobinki, konfetti, awans, karty osiągnięć | ⏭ |
-| 7 | Testy instrumentacyjne, edge case'y, APK release | ⏭ |
+| 1–2 | Koncepcja, design system, makiety | ✅ |
+| 3 | Room, DataStore, architektura, nawigacja, logika XP | ✅ |
+| 4–5 | Trening na żywo, zapis serii, timer przerwy w tle, podsumowanie | ✅ |
+| 6 | Gamifikacja: rangi, seria z płomieniem, wyzwania, rekordy, awanse | ✅ (część) |
+| — | Onboarding, wykresy w Statystykach, eksport/import, mapa mięśni | ⏭ następne |
 
-Po Etapie 3 aplikacja **uruchamia się i działa**: dolny pasek z 5 zakładkami, Home z dzisiejszym treningiem z bazy,
-tygodniem, poziomem i XP; plan FBW A/B/C z kartami techniki i bezpieczeństwa (19 ćwiczeń po polsku);
-Progress Lab z filtrami 7/30/90/cały okres (liczy tylko prawdziwe dane, przy braku historii pokazuje pusty stan);
-kolekcja 12 osiągnięć z postępem; profil z rangą i ustawieniami (ograniczenie animacji, haptyka, celebracje, rozgrzewka).
+### Co działa
 
-Przycisk na karcie dnia to na razie **ZOBACZ TRENING** (podgląd dnia + technika). Tryb Live Workout z zapisem serii
-dochodzi w Etapie 4 — wtedy przycisk staje się START WORKOUT.
+- **START WORKOUT** tworzy sesję z planu i otwiera trening na żywo: ciężar podpowiadany z ostatniego razu,
+  duży przycisk zaliczenia z wibracją i drobinkami, COFNIJ, +seria, „Lżej −10%”, notatka, technika.
+- **Timer przerwy** startuje sam, ±15 s, pomiń, pełny ekran z pierścieniem. Działa w tle dzięki usłudze
+  pierwszoplanowej — powiadomienie z odliczaniem i wibracją na koniec przerwy.
+- **Przerwany trening** wraca po ponownym otwarciu aplikacji (karta „Trening w toku”).
+- **Podsumowanie**: WORKOUT COMPLETE z liczeniem XP, konfetti, rekordy, punkty rang, wyzwania, osiągnięcia,
+  porównanie objętości → **awans rangi** (odznaka obraca się i ląduje) → **ekran serii** (płomień rośnie, licznik przeskakuje).
+- **Rangi**: drabinka Żelazo → Brąz → Srebro → Złoto → Platyna → Szmaragd → Diament → Mistrz → Legenda (I–III).
+  Ranga konta z poziomu, osobna ranga dla 8 partii mięśni. Autorskie odznaki rysowane w Compose.
+- **Seria**: liczy treningi; wystarczą 2 w tygodniu, dni wolne nie przerywają. Tarcza za każde 4 pełne tygodnie.
+- **Wyzwania tygodnia**: 3 rotujące zadania z nagrodą XP, liczone z prawdziwych danych.
 
 ## Jak uruchomić
 
@@ -121,8 +125,13 @@ Bez `fallbackToDestructiveMigration` — każda zmiana schematu dostanie jawną 
 **Poziomy**: przejście z n na n+1 kosztuje `100 + 25·(n−1)` XP. Przy ~3 treningach tygodniowo LVL 5 ≈ 2 tygodnie,
 LVL 10 ≈ 5 tygodni, LVL 50 ≈ 1,5–2 lata.
 
-**Rangi** (progi ze specyfikacji, nazwy autorskie): IGNITE (1) · PATHFINDER (5) · FORGE (10) · VANGUARD (20) ·
-COLOSSUS (30) · ASCENDANT (50). Nazwy i motta zmienisz w `domain/progression/LevelSystem.kt`.
+**Rangi konta**: z poziomu — LVL 1 Żelazo I, LVL 10 Brąz II, LVL 20 Złoto I, LVL 30 Platyna III, LVL 50 Legenda.
+
+**Rangi mięśni**: seria z planu +10 pkt (partia główna) / +5 (pomocnicza), rekord osobisty +15, maks. 60 pkt
+na trening. Dywizja n → n+1 kosztuje 40 + 15·n pkt (Złoto ~3 mies., Legenda ~1,5 roku regularnych treningów).
+
+**Rekordy osobiste**: rekord ciężaru tylko przy czystej serii (powtórzenia ≥ dolnej granicy zakresu),
+powtórzenia ponad górną granicę nie dają rekordu — to sygnał, żeby dołożyć ciężaru, a nie iść do upadku.
 
 **Osiągnięcia** (12): FIRST REP, FIRST WORKOUT, WARM-UP RITUAL, FULL CYCLE, 10/50/100 WORKOUTS,
 CONSISTENT BUILDER (4 tyg. z rzędu ≥ 2 treningi), STEADY QUARTER (12 tyg.), SMART LOAD (świadome zmniejszenie

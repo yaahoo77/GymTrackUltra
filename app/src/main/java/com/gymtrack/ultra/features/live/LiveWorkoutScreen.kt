@@ -138,6 +138,8 @@ fun LiveWorkoutScreen(
     Box(Modifier.fillMaxSize().background(GtColors.Background)) {
         when {
             state.isLoading -> Unit
+            // Po zakończeniu sesja znika z bazy chwilę przed przejściem do podsumowania — nie migamy pustym stanem.
+            session == null && state.isFinishing -> Unit
             session == null -> Column(
                 Modifier.fillMaxSize().padding(24.dp),
                 verticalArrangement = Arrangement.Center,
