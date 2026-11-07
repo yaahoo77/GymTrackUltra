@@ -3,6 +3,7 @@ package com.gymtrack.ultra.domain.model
 import com.gymtrack.ultra.domain.progression.AchievementEvaluator
 import com.gymtrack.ultra.domain.progression.AchievementProgress
 import com.gymtrack.ultra.domain.progression.AchievementStats
+import com.gymtrack.ultra.domain.progression.GamificationSnapshot
 import com.gymtrack.ultra.domain.progression.LevelProgress
 import com.gymtrack.ultra.domain.progression.LevelSystem
 
@@ -14,6 +15,7 @@ data class ProgressSnapshot(
     val completedSessions: List<SessionSummary>,
     val completedSetCount: Int,
     val achievements: List<AchievementProgress>,
+    val gamification: GamificationSnapshot = GamificationSnapshot.Empty,
 ) {
     companion object {
         val Empty = ProgressSnapshot(

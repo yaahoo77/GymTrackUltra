@@ -1,28 +1,9 @@
 package com.gymtrack.ultra.domain.progression
 
-/**
- * Rangi. Progi poziomów zgodne ze specyfikacją (1/5/10/20/30/50), nazwy autorskie.
- * Wygląd odznak jest w ui/components/TierStyle.kt — domena nie zna kolorów.
- */
-enum class Tier(val minLevel: Int, val title: String, val motto: String) {
-    IGNITE(1, "IGNITE", "Iskra zapalona. Każdy trening dokłada drewna."),
-    PATHFINDER(5, "PATHFINDER", "Znasz już drogę do sali i technikę ruchów."),
-    FORGE(10, "FORGE", "Nawyk wykuty. Regularność to twoja przewaga."),
-    VANGUARD(20, "VANGUARD", "Prowadzisz — tydzień za tygodniem."),
-    COLOSSUS(30, "COLOSSUS", "Siła zbudowana cierpliwie, bez skrótów."),
-    ASCENDANT(50, "ASCENDANT", "Legenda własnego planu.");
-
-    companion object {
-        fun forLevel(level: Int): Tier = entries.last { level >= it.minLevel }
-
-        /** Następna ranga albo null na szczycie. */
-        fun nextAfter(tier: Tier): Tier? = entries.getOrNull(tier.ordinal + 1)
-    }
-}
-
 data class LevelProgress(
     val level: Int,
-    val tier: Tier,
+    /** Ranga konta odpowiadająca poziomowi. */
+    val rank: Rank,
     val xpIntoLevel: Int,
     /** XP potrzebne, by przejść z [level] na kolejny; 0 na maksymalnym poziomie. */
     val xpForNextLevel: Int,
@@ -56,7 +37,7 @@ object LevelSystem {
         val need = if (level >= MAX_LEVEL) 0 else xpToAdvanceFrom(level)
         return LevelProgress(
             level = level,
-            tier = Tier.forLevel(level),
+            rank = AccountRank.forLevel(level),
             xpIntoLevel = if (need == 0) 0 else into,
             xpForNextLevel = need,
             totalXp = xp,

@@ -11,23 +11,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gymtrack.ultra.domain.model.UserSettings
-import com.gymtrack.ultra.domain.progression.Tier
 import com.gymtrack.ultra.navigation.GymAppScaffold
-import com.gymtrack.ultra.ui.components.HexBadge
+import com.gymtrack.ultra.ui.components.Wordmark
 import com.gymtrack.ultra.ui.theme.GtColors
 import com.gymtrack.ultra.ui.theme.GtMotion
 import com.gymtrack.ultra.ui.theme.GymTrackTheme
@@ -72,7 +66,7 @@ private fun LaunchScreen() {
     } else {
         val transition = rememberInfiniteTransition(label = "launch")
         val value by transition.animateFloat(
-            initialValue = 0.55f,
+            initialValue = 0.6f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(tween(700), RepeatMode.Reverse),
             label = "launchPulse",
@@ -81,28 +75,9 @@ private fun LaunchScreen() {
     }
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically),
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        HexBadge(
-            fill = GtColors.LimeDim,
-            stroke = GtColors.Lime,
-            glyph = "M20 35 L28 43 L44 26",
-            size = 72.dp,
-            modifier = Modifier.alpha(pulse),
-        )
-        Text(
-            text = buildAnnotatedString {
-                append("GYMTRACK ")
-                withStyle(SpanStyle(color = GtColors.Lime)) { append("ULTRA") }
-            },
-            style = MaterialTheme.typography.headlineMedium,
-            color = GtColors.TextPrimary,
-        )
-        Text(
-            text = Tier.IGNITE.motto,
-            style = MaterialTheme.typography.bodyMedium,
-            color = GtColors.TextSecondary,
-        )
+        Wordmark(modifier = Modifier.alpha(pulse), markSize = 34.dp)
     }
 }

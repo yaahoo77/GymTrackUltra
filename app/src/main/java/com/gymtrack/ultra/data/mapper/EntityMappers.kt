@@ -67,3 +67,19 @@ internal fun WorkoutSessionEntity.toSummary(): SessionSummary = SessionSummary(
     warmupDone = warmupDone,
     xpEarned = xpEarned,
 )
+
+internal fun com.gymtrack.ultra.database.relation.CompletedSetRow.toLogged(): com.gymtrack.ultra.domain.model.LoggedSet =
+    com.gymtrack.ultra.domain.model.LoggedSet(
+        sessionId = sessionId,
+        sessionStart = Instant.ofEpochMilli(startedAt),
+        planDayId = planDayId,
+        exerciseId = exerciseId,
+        tracking = runCatching { TrackingType.valueOf(trackingType) }.getOrDefault(TrackingType.REPS),
+        setIndex = setIndex,
+        targetSets = targetSets,
+        targetMin = targetMin,
+        targetMax = targetMax,
+        weightKg = weightKg,
+        reps = reps,
+        durationSeconds = durationSeconds,
+    )

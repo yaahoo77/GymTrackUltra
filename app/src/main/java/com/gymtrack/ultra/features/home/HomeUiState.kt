@@ -3,6 +3,7 @@ package com.gymtrack.ultra.features.home
 import com.gymtrack.ultra.core.format.Formatters
 import com.gymtrack.ultra.core.time.WeekMath
 import com.gymtrack.ultra.domain.model.PlanDay
+import com.gymtrack.ultra.domain.model.RecordWithName
 import com.gymtrack.ultra.domain.model.ProgressSnapshot
 import com.gymtrack.ultra.domain.model.SessionSummary
 import com.gymtrack.ultra.domain.model.UserSettings
@@ -10,6 +11,9 @@ import com.gymtrack.ultra.domain.plan.TodayPlanner
 import com.gymtrack.ultra.domain.progression.AchievementProgress
 import com.gymtrack.ultra.domain.progression.LevelProgress
 import com.gymtrack.ultra.domain.progression.LevelSystem
+import com.gymtrack.ultra.domain.progression.MuscleRank
+import com.gymtrack.ultra.domain.progression.QuestProgress
+import com.gymtrack.ultra.domain.progression.StreakState
 import java.time.Instant
 import java.time.ZoneId
 
@@ -35,8 +39,15 @@ data class TodayCardUi(
     val doneToday: Boolean,
 )
 
+data class ActiveSessionUi(val title: String, val done: Int, val planned: Int)
+
 data class HomeUiState(
     val isLoading: Boolean = true,
+    val activeSession: ActiveSessionUi? = null,
+    val streak: StreakState = StreakState.Empty,
+    val quests: List<QuestProgress> = emptyList(),
+    val topMuscles: List<MuscleRank> = emptyList(),
+    val recentRecords: List<RecordWithName> = emptyList(),
     val greeting: String = "",
     val headline: String = "",
     val level: LevelProgress = LevelSystem.progressFor(0),
@@ -131,8 +142,22 @@ internal object HomeStateFactory {
             else -> "Dziś regeneracja"
         }
 
+        val exerciseNames = plan.flatMap { it.exercises }.associate { it.exercise.id to it.exercise.namePl }
+        val gamification = progress.gamification
+        val topMuscles = gamification.muscles
+            .sortedWith(compareByDescending<MuscleRank> { it.progress.totalPoints })
+            .take(3)
+        val recentRecords = gamification.records
+            .takeLast(3)
+            .reversed()
+            .map { RecordWithName(it, exerciseNames[it.exerciseId] ?: it.exerciseId) }
+
         return HomeUiState(
             isLoading = false,
+            streak = gamification.streak,
+            quests = gamification.quests,
+            topMuscles = topMuscles,
+            recentRecords = recentRecords,
             greeting = greetingFor(nowZoned.hour, settings.displayName),
             headline = headline,
             level = progress.level,

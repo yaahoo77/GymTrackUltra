@@ -26,7 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.gymtrack.ultra.domain.model.PlanExercise
+import com.gymtrack.ultra.domain.model.Exercise
 import com.gymtrack.ultra.ui.components.GtIcons
 import com.gymtrack.ultra.ui.components.SectionLabel
 import com.gymtrack.ultra.ui.theme.GtColors
@@ -35,7 +35,8 @@ import com.gymtrack.ultra.ui.theme.GtColors
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TechniqueSheet(
-    item: PlanExercise,
+    exercise: Exercise,
+    subtitle: String,
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -64,14 +65,14 @@ fun TechniqueSheet(
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                SectionLabel(item.targetLabel + " · przerwa ${item.restSeconds} s", color = GtColors.Lime)
+                SectionLabel(subtitle, color = GtColors.Lime)
                 Text(
-                    item.exercise.namePl,
+                    exercise.namePl,
                     style = MaterialTheme.typography.headlineMedium,
                     modifier = Modifier.semantics { heading() },
                 )
                 Text(
-                    "${item.exercise.nameEn} · ${item.exercise.muscleGroup}",
+                    "${exercise.nameEn} · ${exercise.muscleGroup}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = GtColors.TextSecondary,
                 )
@@ -79,7 +80,7 @@ fun TechniqueSheet(
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SectionLabel("Technika")
-                item.exercise.technique.forEachIndexed { index, step ->
+                exercise.technique.forEachIndexed { index, step ->
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
                         Box(
                             modifier = Modifier
@@ -99,7 +100,7 @@ fun TechniqueSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(20.dp))
-                    .background(GtColors.LimeDim)
+                    .background(GtColors.Elevated)
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
@@ -107,7 +108,7 @@ fun TechniqueSheet(
                     Icon(GtIcons.Shield, contentDescription = null, tint = GtColors.Lime, modifier = Modifier.size(18.dp))
                     SectionLabel("Bezpieczeństwo", color = GtColors.Lime)
                 }
-                item.exercise.safety.forEach { tip ->
+                exercise.safety.forEach { tip ->
                     Text("•  $tip", style = MaterialTheme.typography.bodyMedium, color = GtColors.TextPrimary)
                 }
                 Text(

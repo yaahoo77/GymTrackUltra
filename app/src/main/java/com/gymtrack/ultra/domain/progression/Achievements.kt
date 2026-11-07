@@ -13,6 +13,12 @@ enum class AchievementMetric {
     TECHNIQUE_VIEWED,
     /** Odblokowywane bezpośrednio akcją (np. świadome zmniejszenie ciężaru). */
     ACTION,
+    /** Najdłuższa seria treningów (płomień). */
+    STREAK,
+    /** Liczba rekordów osobistych. */
+    RECORDS,
+    /** Najwyższa ranga którejkolwiek partii (indeks na drabince). */
+    MUSCLE_RANK,
 }
 
 data class AchievementDefinition(
@@ -41,6 +47,9 @@ object Achievements {
     const val STEADY_QUARTER = "STEADY_QUARTER"
     const val PLAN_ARCHITECT = "PLAN_ARCHITECT"
     const val WORKOUTS_100 = "WORKOUTS_100"
+    const val STREAK_10 = "STREAK_10"
+    const val RECORDS_10 = "RECORDS_10"
+    const val GOLD_MUSCLE = "GOLD_MUSCLE"
 
     val all: List<AchievementDefinition> = listOf(
         AchievementDefinition(FIRST_REP, "FIRST REP", "Pierwsza zaliczona seria", AchievementMetric.COMPLETED_SETS, 1),
@@ -55,6 +64,12 @@ object Achievements {
         AchievementDefinition(STEADY_QUARTER, "STEADY QUARTER", "12 tygodni z rzędu, min. 2 treningi", AchievementMetric.WEEK_STREAK, 12),
         AchievementDefinition(PLAN_ARCHITECT, "PLAN ARCHITECT", "Dostosuj swój plan", AchievementMetric.ACTION, 1),
         AchievementDefinition(WORKOUTS_100, "100 WORKOUTS", "100 ukończonych treningów", AchievementMetric.COMPLETED_WORKOUTS, 100),
+        AchievementDefinition(STREAK_10, "ON FIRE", "Seria 10 treningów", AchievementMetric.STREAK, 10),
+        AchievementDefinition(RECORDS_10, "RECORD HUNTER", "10 rekordów osobistych", AchievementMetric.RECORDS, 10),
+        AchievementDefinition(
+            GOLD_MUSCLE, "GOLDEN MUSCLE", "Pierwsza partia mięśni na Złocie",
+            AchievementMetric.MUSCLE_RANK, Rank.of(RankTier.GOLD, 1).index,
+        ),
     )
 
     fun byCode(code: String): AchievementDefinition? = all.firstOrNull { it.code == code }
@@ -68,6 +83,10 @@ data class AchievementStats(
     val longestWeekStreak: Int = 0,
     val techniqueViewed: Int = 0,
     val techniqueTotal: Int = 0,
+    val longestStreak: Int = 0,
+    val records: Int = 0,
+    /** Indeks najwyższej rangi partii mięśni; -1 = żadna partia nie ma jeszcze rangi. */
+    val bestMuscleRankIndex: Int = -1,
 )
 
 data class AchievementProgress(
@@ -79,7 +98,7 @@ data class AchievementProgress(
 ) {
     val isUnlocked: Boolean get() = unlockedAt != null || current >= target
     val fraction: Float get() = if (target <= 0) 0f else (current.toFloat() / target).coerceIn(0f, 1f)
-    val showsProgressBar: Boolean get() = !isUnlocked && target > 1
+    val showsProgressBar: Boolean get() = !isUnlocked && target > 1 && definition.metric != AchievementMetric.MUSCLE_RANK
 }
 
 object AchievementEvaluator {
@@ -98,6 +117,9 @@ object AchievementEvaluator {
                 AchievementMetric.WEEK_STREAK -> stats.longestWeekStreak
                 AchievementMetric.TECHNIQUE_VIEWED -> stats.techniqueViewed
                 AchievementMetric.ACTION -> if (definition.code in unlocked) 1 else 0
+                AchievementMetric.STREAK -> stats.longestStreak
+                AchievementMetric.RECORDS -> stats.records
+                AchievementMetric.MUSCLE_RANK -> stats.bestMuscleRankIndex.coerceAtLeast(0)
             }
             AchievementProgress(
                 definition = definition,

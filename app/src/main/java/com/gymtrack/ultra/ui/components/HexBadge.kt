@@ -20,7 +20,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.gymtrack.ultra.domain.progression.Achievements
-import com.gymtrack.ultra.domain.progression.Tier
 import com.gymtrack.ultra.ui.theme.GtColors
 
 private const val VIEW_W = 64f
@@ -66,18 +65,6 @@ fun HexBadge(
     }
 }
 
-/** Wygląd rang — kolory i znak; domena zna tylko nazwy. */
-data class BadgeStyle(val fill: Color, val stroke: Color, val glyph: String)
-
-fun Tier.badgeStyle(): BadgeStyle = when (this) {
-    Tier.IGNITE -> BadgeStyle(GtColors.Surface, GtColors.TextSecondary, "M32 22 C27 30 26 36 32 46 C38 36 37 30 32 22 Z")
-    Tier.PATHFINDER -> BadgeStyle(Color(0xFF122016), GtColors.Success, "M22 44 L32 26 L42 44")
-    Tier.FORGE -> BadgeStyle(Color(0xFF17210E), GtColors.Lime, "M20 30 H44 M24 30 V44 H40 V30 M28 24 H36")
-    Tier.VANGUARD -> BadgeStyle(GtColors.LimeDim, GtColors.Lime, "M32 22 L42 30 V42 L32 48 L22 42 V30 Z M32 30 V40")
-    Tier.COLOSSUS -> BadgeStyle(Color(0xFF26340F), GtColors.LimeSoft, "M22 46 V28 L32 22 L42 28 V46 M27 46 V34 H37 V46")
-    Tier.ASCENDANT -> BadgeStyle(GtColors.Lime, GtColors.OnLime, "M20 44 L26 28 L32 38 L38 28 L44 44 Z")
-}
-
 /** Znak każdego osiągnięcia. Odblokowane: lime; zablokowane: przygaszone. */
 fun achievementGlyph(code: String): String = when (code) {
     Achievements.FIRST_REP -> "M20 35 L28 43 L44 26"
@@ -92,5 +79,8 @@ fun achievementGlyph(code: String): String = when (code) {
     Achievements.STEADY_QUARTER -> "M21 26 H43 V45 H21 Z M21 32 H43 M27 22 V28 M37 22 V28"
     Achievements.PLAN_ARCHITECT -> "M22 24 H42 V44 H22 Z M32 24 V44 M22 34 H42"
     Achievements.WORKOUTS_100 -> "M20 44 L22 26 L28 34 L32 24 L36 34 L42 26 L44 44 Z"
+    Achievements.STREAK_10 -> "M32 20 C27 28 25 34 25 39 C25 45 28 48 32 48 C36 48 39 45 39 39 C39 34 37 28 32 20 Z M29 40 C29 37 31 35 32 33 C33 35 35 37 35 40"
+    Achievements.RECORDS_10 -> "M24 22 H40 V30 C40 35 36 38 32 38 C28 38 24 35 24 30 Z M32 38 V44 M26 46 H38"
+    Achievements.GOLD_MUSCLE -> "M20 30 H44 M24 30 V44 H40 V30 M28 24 H36"
     else -> "M20 35 L28 43 L44 26"
 }

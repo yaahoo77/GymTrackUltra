@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
@@ -54,7 +53,7 @@ fun rememberPressScale(
     )
 }
 
-/** Główny neonowy przycisk (START WORKOUT itd.). Glow tylko w stanie aktywnym. */
+/** Główny przycisk akcji (START WORKOUT itd.) — pełny lime, bez poświaty. */
 @Composable
 fun NeonButton(
     text: String,
@@ -62,9 +61,9 @@ fun NeonButton(
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
     enabled: Boolean = true,
-    height: Dp = 64.dp,
+    height: Dp = 56.dp,
 ) {
-    val shape = RoundedCornerShape(20.dp)
+    val shape = RoundedCornerShape(14.dp)
     val interaction = remember { MutableInteractionSource() }
     val scale by rememberPressScale(interaction)
     val contentColor = if (enabled) GtColors.OnLime else GtColors.TextSecondary
@@ -76,12 +75,6 @@ fun NeonButton(
                 scaleX = scale
                 scaleY = scale
             }
-            .shadow(
-                elevation = if (enabled) 18.dp else 0.dp,
-                shape = shape,
-                ambientColor = GtColors.Lime,
-                spotColor = GtColors.Lime,
-            )
             .clip(shape)
             .background(if (enabled) GtColors.Lime else GtColors.Elevated)
             .clickable(
@@ -101,7 +94,7 @@ fun NeonButton(
         }
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge.copy(fontSize = 18.sp, letterSpacing = 1.sp),
+            style = MaterialTheme.typography.labelLarge.copy(fontSize = 17.sp, letterSpacing = 0.6.sp),
             color = contentColor,
             textAlign = TextAlign.Center,
         )
@@ -118,7 +111,7 @@ fun GhostButton(
     accent: Boolean = false,
     height: Dp = 52.dp,
 ) {
-    val shape = RoundedCornerShape(16.dp)
+    val shape = RoundedCornerShape(12.dp)
     val interaction = remember { MutableInteractionSource() }
     val scale by rememberPressScale(interaction)
     val color = if (accent) GtColors.Lime else GtColors.TextPrimary
@@ -131,7 +124,7 @@ fun GhostButton(
                 scaleY = scale
             }
             .clip(shape)
-            .background(if (accent) GtColors.Background else GtColors.Elevated)
+            .background(GtColors.Elevated)
             .border(1.dp, if (accent) GtColors.Lime else GtColors.Outline, shape)
             .clickable(
                 interactionSource = interaction,
@@ -160,7 +153,7 @@ fun IconSquareButton(
     modifier: Modifier = Modifier,
     size: Dp = 48.dp,
 ) {
-    val shape = RoundedCornerShape(16.dp)
+    val shape = RoundedCornerShape(12.dp)
     val interaction = remember { MutableInteractionSource() }
     val scale by rememberPressScale(interaction, pressedScale = 0.92f)
     Row(

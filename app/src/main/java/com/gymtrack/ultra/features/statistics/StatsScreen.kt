@@ -44,10 +44,10 @@ fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 32.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        item(key = "header") { ScreenHeader(eyebrow = "Stats", title = "Progress Lab") }
+        item(key = "header") { ScreenHeader(title = "Statystyki") }
         item(key = "range") { RangeSelector(state.range, onSelect = viewModel::selectRange) }
         item(key = "tiles") {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

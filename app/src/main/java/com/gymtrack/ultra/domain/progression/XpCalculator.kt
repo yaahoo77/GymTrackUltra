@@ -9,9 +9,13 @@ enum class XpReason(val label: String) {
     WARMUP("Rozgrzewka"),
     FULL_PLAN("Komplet serii"),
     WEEKLY_GOAL("Cel tygodnia"),
+    QUEST("Wyzwanie tygodnia"),
 }
 
-data class XpLine(val reason: XpReason, val amount: Int)
+/** [detail] — np. nazwa wyzwania; pokazywana zamiast ogólnej etykiety. */
+data class XpLine(val reason: XpReason, val amount: Int, val detail: String? = null) {
+    val label: String get() = detail ?: reason.label
+}
 
 data class XpAward(
     val lines: List<XpLine>,

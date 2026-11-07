@@ -25,13 +25,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gymtrack.ultra.BuildConfig
 import com.gymtrack.ultra.core.format.Formatters
 import com.gymtrack.ultra.domain.progression.LevelProgress
-import com.gymtrack.ultra.domain.progression.Tier
 import com.gymtrack.ultra.ui.components.GradientProgressBar
 import com.gymtrack.ultra.ui.components.GtCard
-import com.gymtrack.ultra.ui.components.HexBadge
 import com.gymtrack.ultra.ui.components.ScreenHeader
 import com.gymtrack.ultra.ui.components.SectionLabel
-import com.gymtrack.ultra.ui.components.badgeStyle
+import com.gymtrack.ultra.ui.rank.RankEmblem
+import com.gymtrack.ultra.ui.rank.palette
 import com.gymtrack.ultra.ui.theme.GtColors
 import com.gymtrack.ultra.ui.theme.rememberSystemReducedMotion
 
@@ -43,13 +42,12 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 32.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item(key = "header") {
             ScreenHeader(
-                eyebrow = "Profile",
-                title = settings.displayName.ifBlank { "Twój profil" },
+                title = settings.displayName.ifBlank { "Profil" },
                 subtitle = "${settings.goal.label} · ${settings.experience.label}",
             )
         }
@@ -127,20 +125,17 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
 
 @Composable
 private fun RankCard(level: LevelProgress, completedWorkouts: Int) {
-    val style = level.tier.badgeStyle()
-    val next = Tier.nextAfter(level.tier)
-    GtCard(highlighted = true, verticalSpacing = 14.dp) {
+    val palette = level.rank.tier.palette()
+    GtCard(tint = palette.text, verticalSpacing = 14.dp) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            HexBadge(
-                fill = style.fill,
-                stroke = style.stroke,
-                glyph = style.glyph,
-                size = 72.dp,
-                contentDescription = "Odznaka ${level.tier.title}",
+            RankEmblem(
+                rank = level.rank,
+                size = 84.dp,
+                contentDescription = "Ranga ${level.rank.label}",
             )
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(level.rank.label, style = MaterialTheme.typography.titleMedium, color = palette.text)
                 Text("LVL ${level.level}", style = MaterialTheme.typography.displaySmall, color = GtColors.TextPrimary)
-                Text(level.tier.title, style = MaterialTheme.typography.titleMedium, color = GtColors.Lime)
                 Text(
                     Formatters.countLabel(completedWorkouts, "trening", "treningi", "treningów"),
                     style = MaterialTheme.typography.bodySmall,
@@ -148,7 +143,6 @@ private fun RankCard(level: LevelProgress, completedWorkouts: Int) {
                 )
             }
         }
-        Text(level.tier.motto, style = MaterialTheme.typography.bodyMedium, color = GtColors.TextSoft)
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row {
                 Text(
@@ -165,14 +159,7 @@ private fun RankCard(level: LevelProgress, completedWorkouts: Int) {
                     )
                 }
             }
-            GradientProgressBar(progress = level.fraction)
-            if (next != null) {
-                Text(
-                    "Ranga ${next.title} od poziomu ${next.minLevel}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = GtColors.TextSecondary,
-                )
-            }
+            GradientProgressBar(progress = level.fraction, color = palette.text)
         }
     }
 }

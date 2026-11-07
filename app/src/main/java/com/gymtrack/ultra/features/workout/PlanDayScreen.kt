@@ -1,6 +1,8 @@
 package com.gymtrack.ultra.features.workout
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -32,6 +35,7 @@ import com.gymtrack.ultra.ui.components.GhostButton
 import com.gymtrack.ultra.ui.components.GtCard
 import com.gymtrack.ultra.ui.components.GtIcons
 import com.gymtrack.ultra.ui.components.IconSquareButton
+import com.gymtrack.ultra.ui.components.NeonButton
 import com.gymtrack.ultra.ui.components.SectionLabel
 import com.gymtrack.ultra.ui.components.SkeletonBlock
 import com.gymtrack.ultra.ui.theme.GtColors
@@ -39,9 +43,12 @@ import com.gymtrack.ultra.ui.theme.GtColors
 @Composable
 fun PlanDayScreen(
     onBack: () -> Unit,
+    onStarted: () -> Unit,
     viewModel: PlanDayViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val hasActive by viewModel.hasActiveSession.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { viewModel.started.collect { onStarted() } }
     // Id ćwiczenia z otwartą kartą techniki — przetrwa obrót ekranu.
     var openExerciseId by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -62,17 +69,33 @@ fun PlanDayScreen(
         }
 
         is PlanDayUiState.Ready -> {
-            PlanDayContent(
-                day = current.day,
-                onBack = onBack,
-                onOpenTechnique = { item ->
-                    openExerciseId = item.exercise.id
-                    viewModel.onTechniqueOpened(item.exercise.id)
-                },
-            )
+            Column(Modifier.fillMaxSize()) {
+                Box(Modifier.weight(1f)) {
+                    PlanDayContent(
+                        day = current.day,
+                        onBack = onBack,
+                        onOpenTechnique = { item ->
+                            openExerciseId = item.exercise.id
+                            viewModel.onTechniqueOpened(item.exercise.id)
+                        },
+                    )
+                }
+                NeonButton(
+                    text = if (hasActive) "WRÓĆ DO TRENINGU" else "START WORKOUT",
+                    onClick = viewModel::startWorkout,
+                    leadingIcon = GtIcons.Play,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                )
+            }
             val open = current.day.exercises.firstOrNull { it.exercise.id == openExerciseId }
             if (open != null) {
-                TechniqueSheet(item = open, onDismiss = { openExerciseId = null })
+                TechniqueSheet(
+                    exercise = open.exercise,
+                    subtitle = "${open.targetLabel} · przerwa ${open.restSeconds} s",
+                    onDismiss = { openExerciseId = null },
+                )
             }
         }
     }
@@ -86,7 +109,7 @@ private fun PlanDayContent(
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 32.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item(key = "top") {

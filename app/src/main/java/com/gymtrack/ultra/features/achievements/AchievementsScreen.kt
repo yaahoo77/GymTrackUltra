@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,9 +20,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -32,7 +33,6 @@ import com.gymtrack.ultra.core.format.Formatters
 import com.gymtrack.ultra.domain.progression.AchievementProgress
 import com.gymtrack.ultra.ui.components.GradientProgressBar
 import com.gymtrack.ultra.ui.components.HexBadge
-import com.gymtrack.ultra.ui.components.ScreenHeader
 import com.gymtrack.ultra.ui.components.achievementGlyph
 import com.gymtrack.ultra.ui.theme.GtColors
 import com.gymtrack.ultra.ui.theme.LocalGtMotion
@@ -47,23 +47,25 @@ fun AchievementsScreen(viewModel: AchievementsViewModel = hiltViewModel()) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 32.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         item(key = "header", span = { GridItemSpan(maxLineSpan) }) {
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.padding(bottom = 6.dp)) {
-                ScreenHeader(
-                    eyebrow = "Achievements",
-                    title = "Kolekcja",
-                    trailing = {
-                        Text(
-                            "${state.unlockedCount} / ${state.total}",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = GtColors.Lime,
-                        )
-                    },
-                )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 6.dp)) {
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        "Odblokowane",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = GtColors.TextPrimary,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        "${state.unlockedCount} / ${state.total}",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = GtColors.Lime,
+                    )
+                }
                 GradientProgressBar(
                     progress = if (state.total == 0) 0f else state.unlockedCount.toFloat() / state.total,
                     height = 6.dp,
@@ -108,12 +110,12 @@ private fun AchievementCard(item: AchievementProgress, index: Int) {
             .then(
                 if (unlocked) {
                     Modifier
-                        .background(Brush.linearGradient(listOf(GtColors.Elevated, GtColors.Surface)))
-                        .border(1.dp, GtColors.Lime.copy(alpha = 0.3f), shape)
+                        .background(GtColors.Surface)
+                        .border(1.dp, GtColors.Lime.copy(alpha = 0.45f), shape)
                 } else {
                     Modifier
-                        .background(GtColors.Surface.copy(alpha = 0.6f))
-                        .border(1.dp, GtColors.Elevated, shape)
+                        .background(GtColors.Background)
+                        .border(1.dp, GtColors.Divider, shape)
                 },
             )
             .padding(14.dp)

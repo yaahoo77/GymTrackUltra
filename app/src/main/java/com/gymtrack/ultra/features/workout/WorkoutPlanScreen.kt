@@ -43,12 +43,11 @@ fun WorkoutPlanScreen(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 32.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         item(key = "header") {
             ScreenHeader(
-                eyebrow = "Workout",
                 title = "Plan FBW",
                 subtitle = "Full Body · ${state.days.size} dni w tygodniu",
             )
@@ -106,8 +105,7 @@ internal fun DayCodeBadge(code: String, highlighted: Boolean) {
         modifier = Modifier
             .size(48.dp)
             .clip(shape)
-            .background(if (highlighted) GtColors.Lime else GtColors.Elevated)
-            .border(1.dp, if (highlighted) GtColors.Lime else GtColors.Outline, shape),
+            .background(if (highlighted) GtColors.Lime else GtColors.Elevated),
         contentAlignment = Alignment.Center,
     ) {
         Text(

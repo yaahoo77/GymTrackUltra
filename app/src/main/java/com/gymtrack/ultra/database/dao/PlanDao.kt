@@ -28,6 +28,9 @@ interface PlanDao {
     @Query("SELECT COUNT(*) FROM plan_days")
     suspend fun countDays(): Int
 
+    @Query("SELECT COUNT(*) FROM plan_days")
+    fun observeDayCount(): Flow<Int>
+
     @Insert
     suspend fun insertDay(day: PlanDayEntity): Long
 
@@ -43,4 +46,7 @@ interface PlanDao {
     /** Liczba różnych ćwiczeń w całym planie — cel osiągnięcia TECHNIQUE MASTER. */
     @Query("SELECT COUNT(DISTINCT exerciseId) FROM plan_exercises")
     fun observeDistinctExerciseCount(): Flow<Int>
+
+    @Query("SELECT COUNT(DISTINCT exerciseId) FROM plan_exercises")
+    suspend fun getDistinctExerciseCount(): Int
 }

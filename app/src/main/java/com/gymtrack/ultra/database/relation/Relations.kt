@@ -42,3 +42,24 @@ data class SessionWithExercises(
     )
     val exercises: List<SessionExerciseWithSets>,
 )
+
+/** Wiersz historii: zaliczona seria z ukończonego treningu (wynik zapytania z JOIN-ami). */
+data class CompletedSetRow(
+    val sessionId: Long,
+    val startedAt: Long,
+    val planDayId: Long?,
+    val exerciseId: String,
+    val trackingType: String,
+    val setIndex: Int,
+    val targetSets: Int,
+    val targetMin: Int,
+    val targetMax: Int,
+    val weightKg: Double?,
+    val reps: Int?,
+    val durationSeconds: Int?,
+)
+
+data class PlannedSetsRow(
+    val sessionId: Long,
+    val plannedSets: Int,
+)

@@ -33,6 +33,8 @@ fun GradientProgressBar(
     modifier: Modifier = Modifier,
     height: Dp = 8.dp,
     trackColor: Color = GtColors.Elevated,
+    /** Jednolity kolor (np. kolor rangi); null = gradient mint → lime. */
+    color: Color? = null,
 ) {
     val reduced = LocalGtMotion.current.reduced
     val spec: AnimationSpec<Float> = if (reduced) {
@@ -53,15 +55,19 @@ fun GradientProgressBar(
         drawRoundRect(color = trackColor, cornerRadius = radius)
         if (animated > 0f) {
             val width = (size.width * animated).coerceAtLeast(size.height)
-            drawRoundRect(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(GtColors.Success, GtColors.Lime),
-                    startX = 0f,
-                    endX = width,
-                ),
-                size = Size(width, size.height),
-                cornerRadius = radius,
-            )
+            if (color != null) {
+                drawRoundRect(color = color, size = Size(width, size.height), cornerRadius = radius)
+            } else {
+                drawRoundRect(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(GtColors.Success, GtColors.Lime),
+                        startX = 0f,
+                        endX = width,
+                    ),
+                    size = Size(width, size.height),
+                    cornerRadius = radius,
+                )
+            }
         }
     }
 }

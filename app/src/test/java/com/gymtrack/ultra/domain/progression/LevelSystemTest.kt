@@ -10,7 +10,7 @@ class LevelSystemTest {
     fun `zero xp is level 1 ignite`() {
         val p = LevelSystem.progressFor(0)
         assertEquals(1, p.level)
-        assertEquals(Tier.IGNITE, p.tier)
+        assertEquals("ŻELAZO I", p.rank.label)
         assertEquals(0, p.xpIntoLevel)
         assertEquals(100, p.xpForNextLevel)
     }
@@ -43,14 +43,12 @@ class LevelSystemTest {
     }
 
     @Test
-    fun `tiers start at specified levels`() {
-        assertEquals(Tier.IGNITE, Tier.forLevel(4))
-        assertEquals(Tier.PATHFINDER, Tier.forLevel(5))
-        assertEquals(Tier.FORGE, Tier.forLevel(10))
-        assertEquals(Tier.VANGUARD, Tier.forLevel(20))
-        assertEquals(Tier.COLOSSUS, Tier.forLevel(30))
-        assertEquals(Tier.ASCENDANT, Tier.forLevel(50))
-        assertEquals(Tier.ASCENDANT, Tier.forLevel(99))
+    fun `account rank climbs with level`() {
+        assertEquals(Rank.of(RankTier.IRON, 1), AccountRank.forLevel(1))
+        assertEquals(Rank.of(RankTier.BRONZE, 2), AccountRank.forLevel(10))
+        assertEquals(Rank.of(RankTier.GOLD, 1), AccountRank.forLevel(20))
+        assertEquals(RankTier.LEGEND, AccountRank.forLevel(50).tier)
+        assertEquals(RankTier.LEGEND, AccountRank.forLevel(99).tier)
     }
 
     @Test

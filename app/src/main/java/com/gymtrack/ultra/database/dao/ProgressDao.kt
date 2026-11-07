@@ -15,6 +15,12 @@ interface ProgressDao {
     @Query("SELECT COALESCE(SUM(amount), 0) FROM xp_events")
     fun observeTotalXp(): Flow<Int>
 
+    @Query("SELECT COALESCE(SUM(amount), 0) FROM xp_events WHERE createdAt < :beforeMillis")
+    suspend fun sumXpBefore(beforeMillis: Long): Int
+
+    @Query("SELECT * FROM xp_events WHERE sessionId = :sessionId ORDER BY id")
+    suspend fun getXpForSession(sessionId: Long): List<XpEventEntity>
+
     @Insert
     suspend fun insertXpEvents(events: List<XpEventEntity>)
 
@@ -32,6 +38,9 @@ interface ProgressDao {
     @Query("SELECT * FROM achievement_unlocks")
     suspend fun getUnlocks(): List<AchievementUnlockEntity>
 
+    @Query("SELECT * FROM achievement_unlocks WHERE unlockedAt = :atMillis")
+    suspend fun getUnlocksAt(atMillis: Long): List<AchievementUnlockEntity>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertUnlocks(unlocks: List<AchievementUnlockEntity>)
 
@@ -46,4 +55,12 @@ interface ProgressDao {
         """,
     )
     fun observeTechniqueViewedInPlan(): Flow<Int>
+
+    @Query(
+        """
+        SELECT COUNT(*) FROM technique_views
+        WHERE exerciseId IN (SELECT DISTINCT exerciseId FROM plan_exercises)
+        """,
+    )
+    suspend fun getTechniqueViewedInPlan(): Int
 }

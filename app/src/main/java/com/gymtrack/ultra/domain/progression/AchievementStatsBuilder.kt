@@ -15,6 +15,7 @@ object AchievementStatsBuilder {
         techniqueViewed: Int,
         techniqueTotal: Int,
         zone: ZoneId,
+        gamification: GamificationSnapshot = GamificationSnapshot.Empty,
     ): AchievementStats {
         val byWeek = completedSessions.groupBy { WeekMath.weekStart(WeekMath.localDate(it.startedAt, zone)) }
         val countsByWeek = byWeek.mapValues { it.value.size }
@@ -30,6 +31,9 @@ object AchievementStatsBuilder {
             longestWeekStreak = WeekMath.longestWeekStreak(countsByWeek, MIN_WORKOUTS_PER_STREAK_WEEK),
             techniqueViewed = techniqueViewed,
             techniqueTotal = techniqueTotal,
+            longestStreak = gamification.streak.longest,
+            records = gamification.records.size,
+            bestMuscleRankIndex = gamification.bestMuscleRank?.index ?: -1,
         )
     }
 }

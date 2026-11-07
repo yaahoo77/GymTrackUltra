@@ -49,6 +49,15 @@ object Formatters {
         return text.replace('.', ',') + " kg"
     }
 
+    /** 32,5 — liczba do pola edycji, bez jednostki. */
+    fun weightNumber(kg: Double): String = weightKg(kg).removeSuffix(" kg")
+
+    /** "32,5" / "32.5" → 32.5; puste lub błędne → null. */
+    fun parseWeight(text: String): Double? =
+        text.trim().replace(',', '.').toDoubleOrNull()?.takeIf { it >= 0.0 && it < 1000.0 }
+
+    fun parseCount(text: String): Int? = text.trim().toIntOrNull()?.takeIf { it in 0..999 }
+
     /** 07.11 */
     fun dayMonth(date: LocalDate): String =
         "${date.dayOfMonth.toString().padStart(2, '0')}.${date.monthValue.toString().padStart(2, '0')}"

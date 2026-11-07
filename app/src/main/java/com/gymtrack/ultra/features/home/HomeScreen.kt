@@ -12,19 +12,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -34,194 +34,136 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gymtrack.ultra.core.format.Formatters
-import com.gymtrack.ultra.domain.model.SessionSummary
-import com.gymtrack.ultra.domain.progression.AchievementProgress
 import com.gymtrack.ultra.domain.progression.LevelProgress
-import com.gymtrack.ultra.ui.components.EmptyState
+import com.gymtrack.ultra.domain.progression.MuscleRank
+import com.gymtrack.ultra.domain.progression.QuestProgress
+import com.gymtrack.ultra.domain.progression.RecordType
+import com.gymtrack.ultra.domain.progression.StreakState
+import com.gymtrack.ultra.ui.components.GhostButton
 import com.gymtrack.ultra.ui.components.GradientProgressBar
 import com.gymtrack.ultra.ui.components.GtCard
 import com.gymtrack.ultra.ui.components.GtIcons
-import com.gymtrack.ultra.ui.components.HexBadge
-import com.gymtrack.ultra.ui.components.IconSquareButton
+import com.gymtrack.ultra.ui.components.GtTopBar
 import com.gymtrack.ultra.ui.components.NeonButton
-import com.gymtrack.ultra.ui.components.SectionLabel
+import com.gymtrack.ultra.ui.components.SectionTitle
 import com.gymtrack.ultra.ui.components.SkeletonBlock
-import com.gymtrack.ultra.ui.components.achievementGlyph
-import com.gymtrack.ultra.ui.components.badgeStyle
+import com.gymtrack.ultra.ui.components.StreakFlame
+import com.gymtrack.ultra.ui.rank.MuscleRankRow
+import com.gymtrack.ultra.ui.rank.RankEmblem
+import com.gymtrack.ultra.ui.rank.palette
 import com.gymtrack.ultra.ui.theme.GtColors
-import java.time.ZoneId
 
 @Composable
 fun HomeScreen(
+    onOpenLiveWorkout: () -> Unit,
     onOpenPlanDay: (Long) -> Unit,
-    onOpenProfile: () -> Unit,
-    onOpenAchievements: () -> Unit,
-    modifier: Modifier = Modifier,
+    onOpenRanks: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    HomeContent(
-        state = state,
-        onOpenPlanDay = onOpenPlanDay,
-        onOpenProfile = onOpenProfile,
-        onOpenAchievements = onOpenAchievements,
-        modifier = modifier,
-    )
-}
+    var showStreak by rememberSaveable { mutableStateOf(false) }
 
-@Composable
-internal fun HomeContent(
-    state: HomeUiState,
-    onOpenPlanDay: (Long) -> Unit,
-    onOpenProfile: () -> Unit,
-    onOpenAchievements: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .drawBehind {
-                // Subtelna neonowa poświata w prawym górnym rogu.
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(GtColors.Lime.copy(alpha = 0.13f), Color.Transparent),
-                        center = Offset(size.width * 0.95f, 0f),
-                        radius = size.width * 0.75f,
-                    ),
-                    radius = size.width * 0.75f,
-                    center = Offset(size.width * 0.95f, 0f),
-                )
-            },
-    ) {
+    LaunchedEffect(Unit) { viewModel.openLive.collect { onOpenLiveWorkout() } }
+
+    Column(Modifier.fillMaxSize()) {
+        GtTopBar(streak = state.streak, onStreakClick = { showStreak = true })
         if (state.isLoading) {
-            HomeSkeleton()
+            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SkeletonBlock(height = 88.dp)
+                SkeletonBlock(height = 200.dp)
+                SkeletonBlock(height = 140.dp)
+            }
         } else {
-            HomeList(state, onOpenPlanDay, onOpenProfile, onOpenAchievements)
+            HomeList(
+                state = state,
+                onStart = viewModel::startWorkout,
+                onResume = onOpenLiveWorkout,
+                onOpenPlanDay = onOpenPlanDay,
+                onOpenRanks = onOpenRanks,
+                onOpenStreak = { showStreak = true },
+            )
         }
+    }
+
+    if (showStreak) {
+        StreakSheet(streak = state.streak, week = state.week, onDismiss = { showStreak = false })
     }
 }
 
 @Composable
 private fun HomeList(
     state: HomeUiState,
+    onStart: (Long) -> Unit,
+    onResume: () -> Unit,
     onOpenPlanDay: (Long) -> Unit,
-    onOpenProfile: () -> Unit,
-    onOpenAchievements: () -> Unit,
+    onOpenRanks: () -> Unit,
+    onOpenStreak: () -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 32.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item(key = "header") {
-            HomeHeader(state.greeting, state.headline, onOpenProfile)
+        state.activeSession?.let { active ->
+            item(key = "active") { ActiveSessionCard(active, onResume) }
         }
-        item(key = "level") {
-            LevelStrip(state.level, onClick = onOpenProfile)
-        }
-        item(key = "today") {
-            val today = state.today
-            if (today != null) {
-                TodayWorkoutCard(today, state.showWarmupHint, onOpen = { onOpenPlanDay(today.dayId) })
-            } else {
-                GtCard { EmptyState("Brak planu", "Plan treningowy pojawi się tu, gdy go dodasz.") }
+        item(key = "rank") { AccountRankCard(state.level, onOpenRanks) }
+        state.today?.let { today ->
+            item(key = "today") {
+                TodayCard(
+                    card = today,
+                    hasActive = state.activeSession != null,
+                    onStart = { onStart(today.dayId) },
+                    onResume = onResume,
+                    onPreview = { onOpenPlanDay(today.dayId) },
+                )
             }
         }
-        item(key = "week") {
-            WeeklyActivityCard(state.week, state.weeklyDone, state.weeklyTarget)
+        item(key = "streak") { StreakCard(state.streak, state.week, onOpenStreak) }
+        if (state.quests.isNotEmpty()) {
+            item(key = "quests") { QuestsCard(state.quests) }
         }
-        item(key = "recent") {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                LastSessionCard(state.lastSession, Modifier.weight(1f))
-                LatestAchievementCard(state.latestAchievement, onOpenAchievements, Modifier.weight(1f))
-            }
-        }
-        item(key = "strength") {
-            StrengthPreviewCard(hasHistory = state.lastSession != null)
+        item(key = "muscles") { MusclesPreview(state.topMuscles, onOpenRanks) }
+        if (state.recentRecords.isNotEmpty()) {
+            item(key = "records") { RecordsCard(state) }
         }
     }
 }
 
 @Composable
-private fun HomeHeader(greeting: String, headline: String, onOpenProfile: () -> Unit) {
-    Row(verticalAlignment = Alignment.Top) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(greeting, style = MaterialTheme.typography.bodyLarge, color = GtColors.TextSecondary)
-            Text(
-                headline,
-                style = MaterialTheme.typography.headlineMedium,
-                color = GtColors.TextPrimary,
-                modifier = Modifier.semantics { heading() },
+private fun ActiveSessionCard(active: ActiveSessionUi, onResume: () -> Unit) {
+    GtCard(highlighted = true, onClick = onResume, onClickLabel = "Wróć do treningu") {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Box(
+                Modifier
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(GtColors.Lime),
             )
+            Column(Modifier.weight(1f)) {
+                Text("Trening w toku", style = MaterialTheme.typography.bodySmall, color = GtColors.Lime)
+                Text(active.title, style = MaterialTheme.typography.titleMedium, color = GtColors.TextPrimary)
+            }
+            Text("${active.done}/${active.planned}", style = MaterialTheme.typography.titleSmall, color = GtColors.TextSecondary)
+            Icon(GtIcons.ChevronRight, contentDescription = null, tint = GtColors.TextSecondary, modifier = Modifier.size(20.dp))
         }
-        IconSquareButton(icon = GtIcons.Profile, contentDescription = "Profil", onClick = onOpenProfile)
     }
 }
 
 @Composable
-private fun LevelStrip(level: LevelProgress, onClick: () -> Unit) {
-    val style = level.tier.badgeStyle()
-    GtCard(
-        onClick = onClick,
-        onClickLabel = "Otwórz profil",
-        contentPadding = PaddingValues(14.dp),
-    ) {
+private fun AccountRankCard(level: LevelProgress, onClick: () -> Unit) {
+    val palette = level.rank.tier.palette()
+    GtCard(tint = palette.text, onClick = onClick, onClickLabel = "Otwórz rangi", contentPadding = PaddingValues(14.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            HexBadge(fill = style.fill, stroke = style.stroke, glyph = style.glyph, size = 44.dp, contentDescription = "Ranga ${level.tier.title}")
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            RankEmblem(rank = level.rank, size = 64.dp, contentDescription = "Ranga konta ${level.rank.label}")
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Text(
-                        "LVL ${level.level} · ${level.tier.title}",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = GtColors.TextPrimary,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Text(
-                        if (level.isMaxLevel) "MAX" else "${level.xpIntoLevel} / ${level.xpForNextLevel} XP",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = GtColors.TextSecondary,
-                    )
+                    Text(level.rank.label, style = MaterialTheme.typography.titleMedium, color = palette.text, modifier = Modifier.weight(1f))
+                    Text("LVL ${level.level}", style = MaterialTheme.typography.titleMedium, color = GtColors.TextPrimary)
                 }
-                GradientProgressBar(progress = level.fraction)
-            }
-        }
-    }
-}
-
-@Composable
-private fun TodayWorkoutCard(card: TodayCardUi, showWarmupHint: Boolean, onOpen: () -> Unit) {
-    GtCard(highlighted = card.isToday && !card.doneToday, contentPadding = PaddingValues(22.dp), verticalSpacing = 16.dp) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            SectionLabel(card.eyebrow, color = if (card.isToday) GtColors.Lime else GtColors.TextSecondary, modifier = Modifier.weight(1f))
-            Text(card.whenText, style = MaterialTheme.typography.bodySmall, color = GtColors.TextSecondary)
-        }
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(card.title, style = MaterialTheme.typography.displaySmall, color = GtColors.TextPrimary)
-            Text(
-                card.exercisePreview,
-                style = MaterialTheme.typography.bodyMedium,
-                color = GtColors.TextSecondary,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            MiniStat(card.exerciseCount.toString(), Formatters.plural(card.exerciseCount, "ćwiczenie", "ćwiczenia", "ćwiczeń"), Modifier.weight(1f))
-            MiniStat(card.setCount.toString(), Formatters.plural(card.setCount, "seria", "serie", "serii"), Modifier.weight(1f))
-            MiniStat("~${card.minutes}", "minut", Modifier.weight(1f))
-        }
-        NeonButton(
-            text = if (card.doneToday) "ZOBACZ PLAN DNIA" else "ZOBACZ TRENING",
-            onClick = onOpen,
-            leadingIcon = GtIcons.Play,
-            enabled = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        if (showWarmupHint && !card.doneToday) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Icon(GtIcons.Flame, contentDescription = null, tint = GtColors.Lime, modifier = Modifier.size(16.dp))
+                GradientProgressBar(progress = level.fraction, height = 6.dp, color = palette.text)
                 Text(
-                    "Zacznij od 5–8 min rozgrzewki: lekkie cardio i jedna lekka seria.",
+                    if (level.isMaxLevel) "Maksymalny poziom" else "${level.xpIntoLevel} / ${level.xpForNextLevel} XP do LVL ${level.level + 1}",
                     style = MaterialTheme.typography.bodySmall,
                     color = GtColors.TextSecondary,
                 )
@@ -231,153 +173,184 @@ private fun TodayWorkoutCard(card: TodayCardUi, showWarmupHint: Boolean, onOpen:
 }
 
 @Composable
-private fun MiniStat(value: String, label: String, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
-            .background(GtColors.Background.copy(alpha = 0.55f))
-            .semantics(mergeDescendants = true) {}
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-    ) {
-        Text(value, style = MaterialTheme.typography.titleLarge, color = GtColors.TextPrimary)
-        Text(label, style = MaterialTheme.typography.bodySmall, color = GtColors.TextSecondary)
-    }
-}
-
-@Composable
-private fun WeeklyActivityCard(week: List<WeekDayUi>, done: Int, target: Int) {
-    GtCard(verticalSpacing = 14.dp) {
-        Row(verticalAlignment = Alignment.Bottom) {
-            SectionLabel("Weekly activity", modifier = Modifier.weight(1f))
+private fun TodayCard(
+    card: TodayCardUi,
+    hasActive: Boolean,
+    onStart: () -> Unit,
+    onResume: () -> Unit,
+    onPreview: () -> Unit,
+) {
+    GtCard(onClick = onPreview, onClickLabel = "Podgląd ${card.title}", verticalSpacing = 12.dp) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = if (target > 0) "$done / $target ${Formatters.plural(target, "sesja", "sesje", "sesji")}" else "$done",
-                style = MaterialTheme.typography.titleSmall,
-                color = if (target > 0 && done >= target) GtColors.Lime else GtColors.TextSecondary,
-            )
-        }
-        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            week.forEach { day -> WeekDayCell(day) }
-        }
-        Text(
-            "Wolne dni to regeneracja — mięśnie rosną właśnie wtedy.",
-            style = MaterialTheme.typography.bodySmall,
-            color = GtColors.TextSecondary,
-        )
-    }
-}
-
-@Composable
-private fun WeekDayCell(day: WeekDayUi) {
-    val shape = RoundedCornerShape(12.dp)
-    val base = Modifier
-        .size(38.dp)
-        .clip(shape)
-    val styled = when (day.state) {
-        WeekDayState.DONE -> base.background(GtColors.Lime)
-        WeekDayState.TODAY_PLANNED -> base.border(2.dp, GtColors.Lime, shape)
-        WeekDayState.TODAY_REST -> base.border(2.dp, GtColors.OutlineStrong, shape).background(GtColors.Elevated)
-        WeekDayState.PLANNED -> base.border(1.dp, GtColors.OutlineStrong, shape)
-        WeekDayState.REST -> base.background(GtColors.Elevated)
-    }
-    val markColor = when (day.state) {
-        WeekDayState.DONE -> GtColors.OnLime
-        WeekDayState.TODAY_PLANNED -> GtColors.Lime
-        WeekDayState.PLANNED -> GtColors.TextSecondary
-        else -> GtColors.TextMuted
-    }
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = Modifier.clearAndSetSemantics { contentDescription = day.accessibilityText },
-    ) {
-        Text(day.label, style = MaterialTheme.typography.bodySmall, color = GtColors.TextSecondary)
-        Box(styled, contentAlignment = Alignment.Center) {
-            Text(day.mark, style = MaterialTheme.typography.titleSmall, color = markColor)
-        }
-    }
-}
-
-@Composable
-private fun LastSessionCard(session: SessionSummary?, modifier: Modifier = Modifier) {
-    GtCard(modifier = modifier, contentPadding = PaddingValues(16.dp), verticalSpacing = 6.dp) {
-        SectionLabel("Ostatni")
-        if (session == null) {
-            Text("Jeszcze nic", style = MaterialTheme.typography.titleMedium, color = GtColors.TextPrimary)
-            Text("Pierwszy trening przed tobą", style = MaterialTheme.typography.bodySmall, color = GtColors.TextSecondary)
-        } else {
-            val date = session.startedAt.atZone(ZoneId.systemDefault()).toLocalDate()
-            val minutes = session.durationMillis / 60_000
-            Text(session.title, style = MaterialTheme.typography.titleMedium, color = GtColors.TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(
-                "${Formatters.shortDay(date.dayOfWeek)} ${Formatters.dayMonth(date)} · ${Formatters.durationMinutes(minutes)}",
+                when {
+                    card.isToday && card.doneToday -> "Dziś zrobione"
+                    card.isToday -> "Dzisiejszy trening"
+                    else -> "Dziś regeneracja · następny: ${card.whenText.lowercase()}"
+                },
                 style = MaterialTheme.typography.bodySmall,
+                color = if (card.isToday && !card.doneToday) GtColors.Lime else GtColors.TextSecondary,
+                modifier = Modifier.weight(1f),
+            )
+            Icon(GtIcons.ChevronRight, contentDescription = null, tint = GtColors.TextMuted, modifier = Modifier.size(18.dp))
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                card.title,
+                style = MaterialTheme.typography.headlineMedium,
+                color = GtColors.TextPrimary,
+                modifier = Modifier.semantics { heading() },
+            )
+            Text(
+                "${Formatters.countLabel(card.exerciseCount, "ćwiczenie", "ćwiczenia", "ćwiczeń")} · " +
+                    "${Formatters.countLabel(card.setCount, "seria", "serie", "serii")} · ~${card.minutes} min",
+                style = MaterialTheme.typography.bodyMedium,
                 color = GtColors.TextSecondary,
             )
+            Text(
+                card.exercisePreview,
+                style = MaterialTheme.typography.bodySmall,
+                color = GtColors.TextMuted,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        when {
+            hasActive -> NeonButton("WRÓĆ DO TRENINGU", onClick = onResume, leadingIcon = GtIcons.Play, modifier = Modifier.fillMaxWidth())
+            card.isToday && !card.doneToday ->
+                NeonButton("START WORKOUT", onClick = onStart, leadingIcon = GtIcons.Play, modifier = Modifier.fillMaxWidth())
+            else -> GhostButton(
+                if (card.doneToday) "Trenuj jeszcze raz" else "Zrób dziś mimo to",
+                onClick = onStart,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }
 
 @Composable
-private fun LatestAchievementCard(achievement: AchievementProgress?, onOpen: () -> Unit, modifier: Modifier = Modifier) {
-    GtCard(
-        modifier = modifier,
-        onClick = onOpen,
-        onClickLabel = "Otwórz osiągnięcia",
-        contentPadding = PaddingValues(16.dp),
-        verticalSpacing = 6.dp,
-    ) {
-        SectionLabel("Osiągnięcie")
-        if (achievement == null) {
-            Text("FIRST REP", style = MaterialTheme.typography.titleMedium, color = GtColors.TextSoft)
-            Text("Zalicz pierwszą serię", style = MaterialTheme.typography.bodySmall, color = GtColors.TextSecondary)
-        } else {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                HexBadge(
-                    fill = GtColors.LimeDim,
-                    stroke = GtColors.Lime,
-                    glyph = achievementGlyph(achievement.definition.code),
-                    size = 24.dp,
+private fun StreakCard(streak: StreakState, week: List<WeekDayUi>, onClick: () -> Unit) {
+    GtCard(onClick = onClick, onClickLabel = "Szczegóły serii", verticalSpacing = 12.dp) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            StreakFlame(lit = streak.isLit, size = 40.dp)
+            Column(Modifier.weight(1f)) {
+                Text(
+                    if (streak.isLit) "Seria: ${Formatters.countLabel(streak.current, "trening", "treningi", "treningów")}" else "Rozpal serię",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (streak.isLit) GtColors.Fire else GtColors.TextPrimary,
                 )
                 Text(
-                    achievement.definition.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = GtColors.Lime,
+                    if (streak.isSafeThisWeek) {
+                        "Tydzień zaliczony · dni wolne są OK"
+                    } else {
+                        "W tym tygodniu ${streak.thisWeekCount}/${streak.weeklyMinimum} · dni wolne są OK"
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = GtColors.TextSecondary,
+                )
+            }
+        }
+        WeekRow(week)
+    }
+}
+
+@Composable
+internal fun WeekRow(week: List<WeekDayUi>) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        week.forEach { day ->
+            val (bg, border, fg) = when (day.state) {
+                WeekDayState.DONE -> Triple(GtColors.Fire, GtColors.Fire, GtColors.OnLime)
+                WeekDayState.TODAY_PLANNED -> Triple(GtColors.Surface, GtColors.Lime, GtColors.Lime)
+                WeekDayState.TODAY_REST -> Triple(GtColors.Elevated, GtColors.OutlineStrong, GtColors.TextSecondary)
+                WeekDayState.PLANNED -> Triple(GtColors.Surface, GtColors.OutlineStrong, GtColors.TextSecondary)
+                WeekDayState.REST -> Triple(GtColors.Elevated, GtColors.Elevated, GtColors.TextMuted)
+            }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.clearAndSetSemantics { contentDescription = day.accessibilityText },
+            ) {
+                Text(day.label, style = MaterialTheme.typography.bodySmall, color = GtColors.TextSecondary)
+                Box(
+                    Modifier
+                        .size(34.dp)
+                        .clip(CircleShape)
+                        .background(bg)
+                        .border(1.5.dp, border, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (day.state == WeekDayState.DONE) {
+                        Icon(GtIcons.Check, contentDescription = null, tint = fg, modifier = Modifier.size(18.dp))
+                    } else {
+                        Text(day.mark, style = MaterialTheme.typography.titleSmall, color = fg)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuestsCard(quests: List<QuestProgress>) {
+    GtCard(verticalSpacing = 12.dp) {
+        SectionTitle("Wyzwania tygodnia")
+        quests.forEach { q ->
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(
+                    Modifier
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(if (q.isDone) GtColors.Lime else GtColors.Elevated),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (q.isDone) Icon(GtIcons.Check, contentDescription = null, tint = GtColors.OnLime, modifier = Modifier.size(16.dp))
+                }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row {
+                        Text(q.quest.title, style = MaterialTheme.typography.titleSmall, color = GtColors.TextPrimary, modifier = Modifier.weight(1f))
+                        Text("${q.current}/${q.quest.target}", style = MaterialTheme.typography.bodySmall, color = GtColors.TextSecondary)
+                    }
+                    GradientProgressBar(progress = q.fraction, height = 5.dp)
+                }
+                Text(
+                    "+${q.quest.xp} XP",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (q.isDone) GtColors.Lime else GtColors.TextSecondary,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MusclesPreview(muscles: List<MuscleRank>, onOpenRanks: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        SectionTitle("Rangi mięśni", action = "Wszystkie", onAction = onOpenRanks)
+        muscles.forEach { MuscleRankRow(it, onClick = onOpenRanks) }
+    }
+}
+
+@Composable
+private fun RecordsCard(state: HomeUiState) {
+    GtCard(verticalSpacing = 10.dp) {
+        SectionTitle("Ostatnie rekordy")
+        state.recentRecords.forEach { r ->
+            val value = when (r.record.type) {
+                RecordType.TIME -> "${r.record.durationSeconds} s"
+                else -> (r.record.weightKg?.takeIf { it > 0.0 }?.let { Formatters.weightKg(it) + " × " }.orEmpty()) + "${r.record.reps}"
+            }
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Icon(GtIcons.Trophy, contentDescription = null, tint = GtColors.Fire, modifier = Modifier.size(18.dp))
+                Text(
+                    r.exerciseName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = GtColors.TextPrimary,
+                    modifier = Modifier.weight(1f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+                Text(value, style = MaterialTheme.typography.titleSmall, color = GtColors.Fire)
             }
-            Text(achievement.definition.description, style = MaterialTheme.typography.bodySmall, color = GtColors.TextSecondary, maxLines = 2)
         }
-    }
-}
-
-@Composable
-private fun StrengthPreviewCard(hasHistory: Boolean) {
-    GtCard(verticalSpacing = 8.dp) {
-        SectionLabel("Progres siłowy")
-        EmptyState(
-            title = if (hasHistory) "Wykres w drodze" else "Tu pojawi się twój progres",
-            message = if (hasHistory) {
-                "Po kolejnych treningach zobaczysz, jak rośnie ciężar w każdym ćwiczeniu."
-            } else {
-                "Zapisz ciężar i powtórzenia w pierwszym treningu — resztę policzymy za ciebie."
-            },
-            icon = GtIcons.Stats,
-        )
-    }
-}
-
-@Composable
-private fun HomeSkeleton() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        SkeletonBlock(height = 64.dp)
-        SkeletonBlock(height = 72.dp)
-        SkeletonBlock(height = 300.dp)
-        SkeletonBlock(height = 140.dp)
     }
 }
