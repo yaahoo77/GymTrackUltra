@@ -1,5 +1,6 @@
 package com.gymtrack.ultra.features.home
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gymtrack.ultra.features.nutrition.ProteinCardUi
 import com.gymtrack.ultra.core.format.Formatters
 import com.gymtrack.ultra.domain.progression.LevelProgress
 import com.gymtrack.ultra.domain.progression.MuscleRank
@@ -82,6 +84,7 @@ fun HomeScreen(
     onOpenLiveWorkout: () -> Unit,
     onOpenPlanDay: (Long) -> Unit,
     onOpenRanks: () -> Unit,
+    onOpenProtein: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -105,6 +108,7 @@ fun HomeScreen(
                 onOpenPlanDay = onOpenPlanDay,
                 onOpenRanks = onOpenRanks,
                 onOpenStreak = { showStreak = true },
+                onOpenProtein = onOpenProtein,
             )
         }
     }
@@ -122,6 +126,7 @@ private fun HomeList(
     onOpenPlanDay: (Long) -> Unit,
     onOpenRanks: () -> Unit,
     onOpenStreak: () -> Unit,
+    onOpenProtein: () -> Unit,
 ) {
     val appearRegistry = rememberAppearRegistry()
     LazyColumn(
@@ -152,6 +157,7 @@ private fun HomeList(
                 )
             }
         }
+        state.protein?.let { protein -> card("protein") { ProteinCard(protein, onOpenProtein) } }
         card("streak") { StreakCard(state.streak, state.week, onOpenStreak) }
         if (state.quests.isNotEmpty()) {
             card("quests") { QuestsCard(state.quests) }
@@ -479,5 +485,53 @@ private fun TypewriterText(text: String) {
     Box(Modifier.semantics { contentDescription = text }) {
         Text(text, style = style, color = Color.Transparent)
         Text(text.take(shown), style = style, color = GtColors.TextPrimary)
+    }
+}
+
+/** Białko dziś: pasek do celu i szybkie przejście do dziennika. Bez celu — zaproszenie do ustawienia. */
+@Composable
+private fun ProteinCard(protein: ProteinCardUi, onOpen: () -> Unit) {
+    val target = protein.target
+    GtCard(onClick = onOpen, onClickLabel = "Otwórz dziennik białka", verticalSpacing = 10.dp) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Box(
+                Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(GtColors.LimeDim),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(GtIcons.Egg, contentDescription = null, tint = GtColors.Lime, modifier = Modifier.size(22.dp))
+            }
+            Column(Modifier.weight(1f)) {
+                if (target == null) {
+                    Text("Ile białka potrzebujesz?", style = MaterialTheme.typography.titleMedium, color = GtColors.TextPrimary)
+                    Text("Podaj wagę albo cel — policzę resztę.", style = MaterialTheme.typography.bodySmall, color = GtColors.TextSecondary)
+                } else {
+                    val eaten = rememberCountUp(protein.eaten, durationMillis = 700)
+                    Text("Białko dziś", style = MaterialTheme.typography.labelLarge, color = GtColors.TextSecondary)
+                    Text(
+                        "$eaten / $target g",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = if (protein.eaten >= target) GtColors.Lime else GtColors.TextPrimary,
+                    )
+                }
+            }
+            Box(
+                Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(GtColors.Elevated),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    if (target == null) GtIcons.ChevronRight else GtIcons.Plus,
+                    contentDescription = null,
+                    tint = GtColors.TextPrimary,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
+        if (target != null) GradientProgressBar(progress = protein.progress, modifier = Modifier.fillMaxWidth(), height = 8.dp)
     }
 }

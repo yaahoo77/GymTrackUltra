@@ -47,6 +47,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.gymtrack.ultra.features.nutrition.NutritionScreen
 import com.gymtrack.ultra.features.complete.WorkoutCompleteScreen
 import com.gymtrack.ultra.features.home.HomeScreen
 import com.gymtrack.ultra.features.live.LiveWorkoutScreen
@@ -113,7 +114,11 @@ private fun GymNavHost(navController: NavHostController) {
                 onOpenLiveWorkout = { navController.navigate(LiveWorkoutRoute) { launchSingleTop = true } },
                 onOpenPlanDay = { dayId -> navController.navigate(PlanDayRoute(dayId)) },
                 onOpenRanks = { navController.navigateToTopLevel(TopLevelDestination.RANKS) },
+                onOpenProtein = { navController.navigate(NutritionRoute) { launchSingleTop = true } },
             )
+        }
+        composable<NutritionRoute> {
+            NutritionScreen(onBack = { navController.popBackStack() })
         }
         composable<WorkoutRoute> {
             WorkoutPlanScreen(onOpenDay = { dayId -> navController.navigate(PlanDayRoute(dayId)) })
@@ -202,6 +207,7 @@ private fun GymBottomBar(
 private fun NavDestination?.isOnTab(destination: TopLevelDestination): Boolean {
     if (this == null) return false
     if (hierarchy.any { it.hasRoute(destination.route::class) }) return true
+    if (destination == TopLevelDestination.HOME && hierarchy.any { it.hasRoute(NutritionRoute::class) }) return true
     return destination == TopLevelDestination.WORKOUT && hierarchy.any { it.hasRoute(PlanDayRoute::class) }
 }
 

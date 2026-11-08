@@ -21,6 +21,9 @@ import kotlinx.serialization.Serializable
 /** Podsumowanie, awanse i ekran serii po zakończonym treningu. */
 @Serializable data class WorkoutCompleteRoute(val sessionId: Long)
 
+/** Dziennik białka — otwierany z karty na ekranie Start. */
+@Serializable data object NutritionRoute
+
 enum class TopLevelDestination(
     val route: Any,
     val label: String,

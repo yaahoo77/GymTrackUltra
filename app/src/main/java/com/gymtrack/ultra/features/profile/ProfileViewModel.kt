@@ -44,6 +44,7 @@ class ProfileViewModel @Inject constructor(
     fun setHaptics(enabled: Boolean) = update { it.copy(hapticsEnabled = enabled) }
     fun setCelebrations(enabled: Boolean) = update { it.copy(celebrationsEnabled = enabled) }
     fun setWarmupReminder(enabled: Boolean) = update { it.copy(warmupReminder = enabled) }
+    fun setProteinTracking(enabled: Boolean) = update { it.copy(proteinTracking = enabled) }
 
     private fun update(transform: (UserSettings) -> UserSettings) {
         viewModelScope.launch { settingsRepository.update(transform) }

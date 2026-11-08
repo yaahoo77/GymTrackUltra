@@ -2,6 +2,8 @@ package com.gymtrack.ultra.features.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gymtrack.ultra.features.nutrition.ProteinStateFactory
+import com.gymtrack.ultra.domain.repository.NutritionRepository
 import com.gymtrack.ultra.core.time.TimeProvider
 import com.gymtrack.ultra.domain.repository.PlanRepository
 import com.gymtrack.ultra.domain.repository.ProgressRepository
@@ -24,6 +26,7 @@ class HomeViewModel @Inject constructor(
     planRepository: PlanRepository,
     progressRepository: ProgressRepository,
     settingsRepository: SettingsRepository,
+    nutritionRepository: NutritionRepository,
     private val workoutRepository: WorkoutRepository,
     private val time: TimeProvider,
 ) : ViewModel() {
@@ -33,9 +36,11 @@ class HomeViewModel @Inject constructor(
         progressRepository.observeProgress(),
         settingsRepository.settings,
         workoutRepository.observeActiveSession(),
-    ) { plan, progress, settings, active ->
+        nutritionRepository.observeEntries(1),
+    ) { plan, progress, settings, active, food ->
         HomeStateFactory.build(plan, progress, settings, time.now(), time.zone()).copy(
             activeSession = active?.let { ActiveSessionUi(it.title, it.completedPlannedSets, it.plannedSets) },
+            protein = ProteinStateFactory.card(settings, food, time.today()),
         )
     }.stateIn(
         scope = viewModelScope,

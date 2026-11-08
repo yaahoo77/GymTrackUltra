@@ -1,5 +1,6 @@
 package com.gymtrack.ultra.features.home
 
+import com.gymtrack.ultra.features.nutrition.ProteinCardUi
 import com.gymtrack.ultra.core.format.Formatters
 import com.gymtrack.ultra.core.time.WeekMath
 import com.gymtrack.ultra.domain.model.PlanDay
@@ -58,6 +59,8 @@ data class HomeUiState(
     val lastSession: SessionSummary? = null,
     val latestAchievement: AchievementProgress? = null,
     val showWarmupHint: Boolean = true,
+    /** null = śledzenie białka wyłączone w Profilu. */
+    val protein: ProteinCardUi? = null,
 )
 
 /** Czysta funkcja: dane → stan ekranu. Testowalna bez Androida. */

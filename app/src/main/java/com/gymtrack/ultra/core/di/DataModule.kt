@@ -8,7 +8,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
+import com.gymtrack.ultra.database.ALL_MIGRATIONS
 import com.gymtrack.ultra.database.GymDatabase
+import com.gymtrack.ultra.database.dao.FoodDao
 import com.gymtrack.ultra.database.dao.ExerciseDao
 import com.gymtrack.ultra.database.dao.PlanDao
 import com.gymtrack.ultra.database.dao.ProgressDao
@@ -28,6 +30,7 @@ object DataModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): GymDatabase =
         Room.databaseBuilder(context, GymDatabase::class.java, GymDatabase.NAME)
+            .addMigrations(*ALL_MIGRATIONS)
             .build()
 
     @Provides
@@ -41,6 +44,9 @@ object DataModule {
 
     @Provides
     fun provideProgressDao(db: GymDatabase): ProgressDao = db.progressDao()
+
+    @Provides
+    fun provideFoodDao(db: GymDatabase): FoodDao = db.foodDao()
 
     @Provides
     @Singleton

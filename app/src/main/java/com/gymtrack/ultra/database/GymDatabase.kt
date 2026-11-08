@@ -3,11 +3,13 @@ package com.gymtrack.ultra.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.gymtrack.ultra.database.dao.ExerciseDao
+import com.gymtrack.ultra.database.dao.FoodDao
 import com.gymtrack.ultra.database.dao.PlanDao
 import com.gymtrack.ultra.database.dao.ProgressDao
 import com.gymtrack.ultra.database.dao.SessionDao
 import com.gymtrack.ultra.database.entity.AchievementUnlockEntity
 import com.gymtrack.ultra.database.entity.ExerciseEntity
+import com.gymtrack.ultra.database.entity.FoodEntryEntity
 import com.gymtrack.ultra.database.entity.PlanDayEntity
 import com.gymtrack.ultra.database.entity.PlanExerciseEntity
 import com.gymtrack.ultra.database.entity.SessionExerciseEntity
@@ -17,7 +19,7 @@ import com.gymtrack.ultra.database.entity.WorkoutSessionEntity
 import com.gymtrack.ultra.database.entity.XpEventEntity
 
 /**
- * Wersja 1. Każda zmiana schematu = nowa wersja + jawna migracja.
+ * Wersja 2 (v0.7: dziennik białka). Każda zmiana schematu = nowa wersja + jawna migracja (Migrations.kt).
  * Celowo BEZ fallbackToDestructiveMigration — dane treningowe nie mogą zniknąć.
  */
 @Database(
@@ -31,8 +33,9 @@ import com.gymtrack.ultra.database.entity.XpEventEntity
         XpEventEntity::class,
         AchievementUnlockEntity::class,
         TechniqueViewEntity::class,
+        FoodEntryEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class GymDatabase : RoomDatabase() {
@@ -40,6 +43,7 @@ abstract class GymDatabase : RoomDatabase() {
     abstract fun planDao(): PlanDao
     abstract fun sessionDao(): SessionDao
     abstract fun progressDao(): ProgressDao
+    abstract fun foodDao(): FoodDao
 
     companion object {
         const val NAME = "gymtrack_ultra.db"

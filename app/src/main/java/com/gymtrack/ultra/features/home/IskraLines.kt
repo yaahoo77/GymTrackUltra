@@ -20,6 +20,7 @@ internal object IskraLines {
         "Sen i woda robią połowę roboty.",
         "Coś boli? Przerwij. Nie trenujemy przez ból.",
         "Rekord liczy się tylko przy czystej technice.",
+        "Białko najłatwiej rozłożyć na 3–4 posiłki. Jajka, skyr i twaróg robią robotę.",
     )
 
     fun headline(state: HomeUiState): IskraLine {

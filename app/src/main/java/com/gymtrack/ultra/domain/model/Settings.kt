@@ -1,5 +1,6 @@
 package com.gymtrack.ultra.domain.model
 
+import com.gymtrack.ultra.domain.nutrition.ProteinGoal
 import java.time.DayOfWeek
 
 enum class TrainingGoal(val label: String) {
@@ -16,8 +17,9 @@ enum class ExperienceLevel(val label: String) {
 }
 
 /**
- * Ustawienia trzymane w DataStore. Celowo bez wagi, wzrostu, zdjęć ani wieku —
- * aplikacja ich nie potrzebuje.
+ * Ustawienia trzymane w DataStore, tylko na telefonie. Bez wzrostu, zdjęć ani wieku.
+ * Waga jest opcjonalna — podaje się ją wyłącznie po to, żeby policzyć cel białka
+ * (można też wpisać cel ręcznie i w ogóle jej nie podawać).
  */
 data class UserSettings(
     val onboardingCompleted: Boolean = false,
@@ -29,6 +31,10 @@ data class UserSettings(
     val hapticsEnabled: Boolean = true,
     val celebrationsEnabled: Boolean = true,
     val warmupReminder: Boolean = true,
+    val proteinTracking: Boolean = true,
+    val bodyWeightKg: Double? = null,
+    val proteinGoal: ProteinGoal = ProteinGoal.TRAINING,
+    val manualProteinTarget: Int? = null,
 ) {
     companion object {
         val DEFAULT_TRAINING_DAYS: Set<DayOfWeek> =

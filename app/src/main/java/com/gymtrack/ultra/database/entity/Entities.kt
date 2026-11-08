@@ -166,3 +166,13 @@ data class TechniqueViewEntity(
     @PrimaryKey val exerciseId: String,
     val firstViewedAt: Long,
 )
+
+/** Dziennik białka: jeden wpis = jeden produkt albo posiłek. Tylko gramy białka — bez kalorii. */
+@Entity(tableName = "food_entries", indices = [Index("epochDay")])
+data class FoodEntryEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val epochDay: Long,
+    val name: String,
+    val proteinGrams: Int,
+    val createdAt: Long,
+)

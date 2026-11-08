@@ -1,5 +1,6 @@
 package com.gymtrack.ultra.domain.repository
 
+import com.gymtrack.ultra.domain.nutrition.FoodEntry
 import com.gymtrack.ultra.domain.model.LiveSession
 import com.gymtrack.ultra.domain.model.PlanDay
 import com.gymtrack.ultra.domain.model.ProgressSnapshot
@@ -51,6 +52,20 @@ interface RestTimerRepository {
 }
 
 /** Ustawienia użytkownika (DataStore). */
+/** Dziennik białka. Wpisy trzymane w Room, tylko na telefonie. */
+interface NutritionRepository {
+    /** Wpisy z ostatnich [days] dni (licząc dzisiaj), najnowsze pierwsze. */
+    fun observeEntries(days: Int): Flow<List<FoodEntry>>
+
+    /** Ostatnie wpisy niezależnie od daty — do podpowiedzi "dodaj jeszcze raz". */
+    fun observeRecent(limit: Int): Flow<List<FoodEntry>>
+
+    /** Zwraca id wpisu — do cofnięcia. */
+    suspend fun add(name: String, proteinGrams: Int): Long
+
+    suspend fun delete(id: Long)
+}
+
 interface SettingsRepository {
     val settings: Flow<UserSettings>
     suspend fun update(transform: (UserSettings) -> UserSettings)

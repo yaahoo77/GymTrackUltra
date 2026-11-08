@@ -103,6 +103,13 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
                     checked = settings.warmupReminder,
                     onCheckedChange = viewModel::setWarmupReminder,
                 )
+                HorizontalDivider(color = GtColors.Divider)
+                SettingSwitch(
+                    title = "Śledzenie białka",
+                    description = "Karta „Białko dziś” na ekranie Start i dziennik posiłków.",
+                    checked = settings.proteinTracking,
+                    onCheckedChange = viewModel::setProteinTracking,
+                )
             }
         }
         item(key = "privacy") {
@@ -110,7 +117,8 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
                 SectionLabel("Twoje dane")
                 Text(
                     "Wszystko zostaje na tym telefonie. Bez konta, bez reklam, bez śledzenia. " +
-                        "Nie pytamy o wagę, wiek ani zdjęcia.",
+                        "Nie pytamy o wiek ani zdjęcia. Wagę podajesz tylko, jeśli chcesz policzyć białko — " +
+                        "i możesz ją usunąć w dzienniku białka.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = GtColors.TextSoft,
                 )

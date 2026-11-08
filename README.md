@@ -4,7 +4,7 @@ Natywna aplikacja treningowa na Androida — Kotlin, Jetpack Compose, Material 3
 Styl **Cyber Lime Dark**: prawie czarne tło, jeden neonowy akcent, duże liczby, satysfakcjonujące mikrointerakcje.
 Działa w 100% offline, bez konta, wszystkie dane zostają na telefonie.
 
-## Stan projektu (v0.6)
+## Stan projektu (v0.7)
 
 | Etap | Zakres | Status |
 |---|---|---|
@@ -34,6 +34,10 @@ Działa w 100% offline, bez konta, wszystkie dane zostają na telefonie.
 - **Animacje ćwiczeń**: każde z 24 ćwiczeń w bibliotece ma własną animowaną postać-manekina (karta techniki, trening
   na żywo, plan). Pracujące partie świecą na lime (klatka, plecy, brzuch, pośladki, barki, ręce, uda), tempo pokazuje
   kontrolowane opuszczanie, pod spodem podpis fazy ruchu. Postać liczona jest odwrotną kinematyką z dwóch póz.
+- **Białko**: podajesz wagę (opcjonalnie) i cel — trening siłowy 1,6 g/kg albo podstawowy 1,2 g/kg
+  (ISSN 2017: 1,4–2,0 g/kg dla trenujących; Morton i in. 2018: plateau ok. 1,6 g/kg) — albo wpisujesz cel ręcznie.
+  Karta „Białko dziś” na Start, dziennik z 20 typowymi produktami jednym kliknięciem, własne wpisy, cofanie,
+  wykres 7 dni. Bez kalorii i bez wykresów wagi. Waga zostaje na telefonie i da się ją usunąć.
 - **Iskra**: płomyk-maskotka na ekranie Start — mruga, kołysze się, mówi, co dziś w planie, po dotknięciu podskakuje
   i podaje wskazówkę. Na podsumowaniu treningu skacze z radości. W dzień wolny drzemie.
 - **Więcej życia**: karty wjeżdżają po kolei, paski i liczniki napełniają się od zera, połysk na odznakach rang
@@ -116,7 +120,7 @@ app/src/main/java/com/gymtrack/ultra/
     └── exercise/      ExerciseRig (szkielet + IK) · ExerciseMotions (24 ćwiczenia) · ExerciseDrawing · ExerciseAnimation
 ```
 
-## Baza danych (Room, wersja 1)
+## Baza danych (Room, wersja 2)
 
 | Tabela | Po co |
 |---|---|
@@ -127,6 +131,7 @@ app/src/main/java/com/gymtrack/ultra/
 | `set_logs` | ciężar, powtórzenia lub czas, zaliczenie, znacznik czasu |
 | `xp_events` | księga XP — każdy wpis osobno (limit dzienny, premia tygodniowa) |
 | `achievement_unlocks`, `technique_views` | odblokowania i przeczytane techniki |
+| `food_entries` | dziennik białka: dzień, nazwa, gramy białka (migracja 1 → 2 w `Migrations.kt`) |
 
 Bez `fallbackToDestructiveMigration` — każda zmiana schematu dostanie jawną migrację. Schematy trafiają do `app/schemas/`.
 

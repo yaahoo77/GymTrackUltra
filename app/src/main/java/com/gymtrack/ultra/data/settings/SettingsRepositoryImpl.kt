@@ -4,10 +4,14 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.doublePreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
+import com.gymtrack.ultra.domain.nutrition.ProteinCalculator
+import com.gymtrack.ultra.domain.nutrition.ProteinGoal
 import com.gymtrack.ultra.domain.model.ExperienceLevel
 import com.gymtrack.ultra.domain.model.TrainingGoal
 import com.gymtrack.ultra.domain.model.UserSettings
@@ -36,6 +40,10 @@ class SettingsRepositoryImpl @Inject constructor(
         val HAPTICS = booleanPreferencesKey("haptics_enabled")
         val CELEBRATIONS = booleanPreferencesKey("celebrations_enabled")
         val WARMUP_REMINDER = booleanPreferencesKey("warmup_reminder")
+        val PROTEIN_TRACKING = booleanPreferencesKey("protein_tracking")
+        val BODY_WEIGHT = doublePreferencesKey("body_weight_kg")
+        val PROTEIN_GOAL = stringPreferencesKey("protein_goal")
+        val MANUAL_PROTEIN = intPreferencesKey("manual_protein_target")
     }
 
     override val settings: Flow<UserSettings> = store.data
@@ -71,6 +79,12 @@ class SettingsRepositoryImpl @Inject constructor(
             hapticsEnabled = this[Keys.HAPTICS] ?: defaults.hapticsEnabled,
             celebrationsEnabled = this[Keys.CELEBRATIONS] ?: defaults.celebrationsEnabled,
             warmupReminder = this[Keys.WARMUP_REMINDER] ?: defaults.warmupReminder,
+            proteinTracking = this[Keys.PROTEIN_TRACKING] ?: defaults.proteinTracking,
+            bodyWeightKg = this[Keys.BODY_WEIGHT]?.takeIf { ProteinCalculator.isValidWeight(it) },
+            proteinGoal = this[Keys.PROTEIN_GOAL]?.let { name -> ProteinGoal.entries.firstOrNull { it.name == name } }
+                ?: defaults.proteinGoal,
+            manualProteinTarget = this[Keys.MANUAL_PROTEIN]
+                ?.takeIf { it in ProteinCalculator.MIN_TARGET..ProteinCalculator.MAX_TARGET },
         )
     }
 
@@ -84,6 +98,14 @@ class SettingsRepositoryImpl @Inject constructor(
         this[Keys.HAPTICS] = settings.hapticsEnabled
         this[Keys.CELEBRATIONS] = settings.celebrationsEnabled
         this[Keys.WARMUP_REMINDER] = settings.warmupReminder
+        this[Keys.PROTEIN_TRACKING] = settings.proteinTracking
+        this[Keys.PROTEIN_GOAL] = settings.proteinGoal.name
+        // Waga i cel ręczny są opcjonalne — brak wartości = klucz usunięty, nic nie zostaje w pliku.
+        val weight = settings.bodyWeightKg?.takeIf { ProteinCalculator.isValidWeight(it) }
+        if (weight != null) this[Keys.BODY_WEIGHT] = weight else remove(Keys.BODY_WEIGHT)
+        val manual = settings.manualProteinTarget
+            ?.coerceIn(ProteinCalculator.MIN_TARGET, ProteinCalculator.MAX_TARGET)
+        if (manual != null) this[Keys.MANUAL_PROTEIN] = manual else remove(Keys.MANUAL_PROTEIN)
     }
 
     private companion object {

@@ -2,11 +2,13 @@ package com.gymtrack.ultra.core.di
 
 import com.gymtrack.ultra.core.time.SystemTimeProvider
 import com.gymtrack.ultra.core.time.TimeProvider
+import com.gymtrack.ultra.data.repository.NutritionRepositoryImpl
 import com.gymtrack.ultra.data.repository.PlanRepositoryImpl
 import com.gymtrack.ultra.data.repository.ProgressRepositoryImpl
 import com.gymtrack.ultra.data.repository.WorkoutRepositoryImpl
 import com.gymtrack.ultra.data.settings.RestTimerRepositoryImpl
 import com.gymtrack.ultra.data.settings.SettingsRepositoryImpl
+import com.gymtrack.ultra.domain.repository.NutritionRepository
 import com.gymtrack.ultra.domain.repository.PlanRepository
 import com.gymtrack.ultra.domain.repository.ProgressRepository
 import com.gymtrack.ultra.domain.repository.RestTimerRepository
@@ -41,6 +43,10 @@ abstract class BindingsModule {
     @Binds
     @Singleton
     abstract fun bindRestTimerRepository(impl: RestTimerRepositoryImpl): RestTimerRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindNutritionRepository(impl: NutritionRepositoryImpl): NutritionRepository
 
     @Binds
     @Singleton
