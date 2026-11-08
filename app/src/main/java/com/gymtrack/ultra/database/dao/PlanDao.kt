@@ -25,6 +25,13 @@ interface PlanDao {
     @Query("SELECT * FROM plan_days WHERE id = :id")
     suspend fun getPlanDay(id: Long): PlanDayWithExercises?
 
+    @Transaction
+    @Query("SELECT * FROM plan_days ORDER BY position")
+    suspend fun getPlanDays(): List<PlanDayWithExercises>
+
+    @Query("DELETE FROM plan_exercises WHERE planDayId = :dayId")
+    suspend fun deleteExercisesForDay(dayId: Long)
+
     @Query("SELECT COUNT(*) FROM plan_days")
     suspend fun countDays(): Int
 

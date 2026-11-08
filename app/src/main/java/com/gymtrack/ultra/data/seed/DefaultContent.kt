@@ -30,7 +30,7 @@ data class SeedPlanDay(
 )
 
 /**
- * Gotowy plan FBW 3 dni + biblioteka 19 ćwiczeń z techniką i bezpieczeństwem.
+ * Gotowy plan FBW 3 dni z klasycznych ćwiczeń + biblioteka 24 ćwiczeń z techniką i bezpieczeństwem.
  * Teksty pisane z myślą także o nastolatkach: zero prób maksymalnych, ból = sygnał, by przerwać.
  */
 object DefaultContent {
@@ -355,6 +355,100 @@ object DefaultContent {
                 "Zacznij od krótszych serii i wydłużaj stopniowo.",
             ),
         ),
+        // ── KLASYKI (v0.6) — ćwiczenia, które robi każdy na siłowni ─────────
+        SeedExercise(
+            id = "chest_press_machine",
+            namePl = "Wyciskanie na maszynie siedząc",
+            nameEn = "Seated Chest Press Machine",
+            muscleGroup = "Klatka, triceps, przód barków",
+            technique = listOf(
+                "Ustaw siedzisko tak, by uchwyty były na wysokości środka klatki.",
+                "Plecy oparte, łopatki ściągnięte, stopy płasko na podłodze.",
+                "Wypchnij uchwyty przed siebie, aż ręce będą prawie proste.",
+                "Wracaj powoli, aż poczujesz lekkie rozciągnięcie klatki.",
+            ),
+            safety = listOf(
+                "Nie blokuj łokci na końcu ruchu.",
+                "Plecy cały czas przy oparciu — nie odrywaj ich, żeby dopchnąć.",
+                "Ból barku = mniejszy zakres ruchu i lżejszy ciężar.",
+            ),
+        ),
+        SeedExercise(
+            id = "one_arm_db_row",
+            namePl = "Wiosłowanie hantlem jednorącz",
+            nameEn = "One-Arm Dumbbell Row",
+            muscleGroup = "Plecy, biceps",
+            sideNote = PER_SIDE,
+            technique = listOf(
+                "Oprzyj kolano i dłoń jednej strony na ławce, drugą stopę postaw pewnie na podłodze.",
+                "Plecy proste, mniej więcej równolegle do podłogi.",
+                "Przyciągnij hantlę do biodra, prowadząc łokieć blisko tułowia.",
+                "Opuść powoli do wyprostu ręki. Zrób wszystkie powtórzenia, potem zmień stronę.",
+            ),
+            safety = listOf(
+                "Nie skręcaj tułowia, żeby podrzucić ciężar.",
+                "Plecy nie mogą się zaokrąglać — w razie czego weź lżejszą hantlę.",
+            ),
+        ),
+        SeedExercise(
+            id = "leg_extension",
+            namePl = "Prostowanie nóg na maszynie",
+            nameEn = "Leg Extension",
+            muscleGroup = "Przód ud",
+            technique = listOf(
+                "Ustaw oparcie tak, by kolana były na krawędzi siedziska, a wałek tuż nad kostkami.",
+                "Trzymaj uchwyty po bokach siedziska.",
+                "Wyprostuj nogi płynnym ruchem i zatrzymaj je na chwilę na górze.",
+                "Opuść powoli, bez upuszczania ciężaru.",
+            ),
+            safety = listOf(
+                "Bez kopania i szarpania — ruch ma być kontrolowany.",
+                "Ból w kolanie = przerwij i zmniejsz ciężar lub zakres.",
+            ),
+        ),
+        SeedExercise(
+            id = "knee_raise",
+            namePl = "Unoszenie kolan na poręczach",
+            nameEn = "Captain's Chair Knee Raise",
+            muscleGroup = "Brzuch",
+            technique = listOf(
+                "Oprzyj przedramiona na poręczach, plecy dociśnięte do oparcia.",
+                "Nogi zwisają swobodnie.",
+                "Unieś kolana do wysokości bioder, napinając brzuch.",
+                "Opuść powoli, bez bujania nogami.",
+            ),
+            safety = listOf(
+                "Ruch z brzucha, nie z rozbujania.",
+                "Za trudne? Unoś kolana niżej albo zrób mniej powtórzeń.",
+                "Ból pleców = przerwij.",
+            ),
+        ),
+        SeedExercise(
+            id = "hammer_curl",
+            namePl = "Uginanie ramion młotkowe",
+            nameEn = "Hammer Curl",
+            muscleGroup = "Biceps, przedramiona",
+            technique = listOf(
+                "Stań prosto, hantle po bokach, kciuki skierowane do przodu.",
+                "Uginaj ręce bez obracania dłoni — chwyt jak przy trzymaniu młotka.",
+                "Łokcie zostają przy tułowiu.",
+                "Opuść powoli do pełnego wyprostu.",
+            ),
+            safety = listOf(
+                "Nie bujaj tułowiem.",
+                "Lżej, ale czysto — to nie wyścig na ciężar.",
+            ),
+        ),
+    )
+
+    /**
+     * Pierwsza wersja planu (v0.1–v0.5). Jeśli w bazie jest dokładnie ten plan, seeder podmienia go na nowy —
+     * część ćwiczeń wyglądała na siłowni nietypowo. Ćwiczenia zostają w bibliotece, więc historia działa dalej.
+     */
+    val legacyPlanV1: List<List<String>> = listOf(
+        listOf("goblet_squat", "db_bench_press", "seated_cable_row", "hip_thrust", "lateral_raise", "dead_bug"),
+        listOf("db_romanian_deadlift", "lat_pulldown", "lunges", "seated_db_shoulder_press", "face_pull", "side_plank"),
+        listOf("leg_press", "incline_db_press", "chest_supported_row", "leg_curl", "db_bicep_curl", "tricep_pushdown", "plank"),
     )
 
     val plan: List<SeedPlanDay> = listOf(
@@ -363,12 +457,12 @@ object DefaultContent {
             title = "WORKOUT A",
             dayOfWeek = DayOfWeek.MONDAY,
             items = listOf(
-                SeedPlanItem("goblet_squat", 3, 8, 10, 120),
+                SeedPlanItem("leg_press", 3, 10, 12, 120),
                 SeedPlanItem("db_bench_press", 3, 8, 12, 120),
-                SeedPlanItem("seated_cable_row", 3, 10, 12, 90),
-                SeedPlanItem("hip_thrust", 2, 10, 12, 90),
-                SeedPlanItem("lateral_raise", 2, 12, 15, 60),
-                SeedPlanItem("dead_bug", 2, 8, 10, 60),
+                SeedPlanItem("lat_pulldown", 3, 8, 12, 90),
+                SeedPlanItem("seated_db_shoulder_press", 2, 8, 12, 90),
+                SeedPlanItem("db_bicep_curl", 2, 10, 12, 60),
+                SeedPlanItem("plank", 2, 20, 40, 60),
             ),
         ),
         SeedPlanDay(
@@ -376,12 +470,12 @@ object DefaultContent {
             title = "WORKOUT B",
             dayOfWeek = DayOfWeek.WEDNESDAY,
             items = listOf(
-                SeedPlanItem("db_romanian_deadlift", 3, 8, 10, 120),
-                SeedPlanItem("lat_pulldown", 3, 8, 12, 90),
-                SeedPlanItem("lunges", 2, 8, 10, 90),
-                SeedPlanItem("seated_db_shoulder_press", 2, 8, 12, 90),
-                SeedPlanItem("face_pull", 2, 12, 15, 60),
-                SeedPlanItem("side_plank", 2, 20, 30, 60),
+                SeedPlanItem("goblet_squat", 3, 8, 10, 120),
+                SeedPlanItem("chest_press_machine", 3, 10, 12, 90),
+                SeedPlanItem("seated_cable_row", 3, 10, 12, 90),
+                SeedPlanItem("lateral_raise", 2, 12, 15, 60),
+                SeedPlanItem("tricep_pushdown", 2, 10, 12, 60),
+                SeedPlanItem("knee_raise", 2, 8, 12, 60),
             ),
         ),
         SeedPlanDay(
@@ -389,13 +483,12 @@ object DefaultContent {
             title = "WORKOUT C",
             dayOfWeek = DayOfWeek.FRIDAY,
             items = listOf(
-                SeedPlanItem("leg_press", 3, 10, 12, 120),
+                SeedPlanItem("db_romanian_deadlift", 3, 8, 10, 120),
                 SeedPlanItem("incline_db_press", 3, 8, 12, 120),
-                SeedPlanItem("chest_supported_row", 3, 10, 12, 90),
+                SeedPlanItem("one_arm_db_row", 3, 10, 12, 90),
+                SeedPlanItem("leg_extension", 2, 10, 15, 60),
                 SeedPlanItem("leg_curl", 2, 10, 15, 60),
-                SeedPlanItem("db_bicep_curl", 2, 10, 12, 60),
-                SeedPlanItem("tricep_pushdown", 2, 10, 12, 60),
-                SeedPlanItem("plank", 2, 20, 40, 60),
+                SeedPlanItem("hammer_curl", 2, 10, 12, 60),
             ),
         ),
     )

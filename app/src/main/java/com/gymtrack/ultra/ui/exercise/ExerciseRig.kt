@@ -29,8 +29,8 @@ internal object Rig {
 
 enum class View { SIDE, FRONT }
 
-/** Segmenty podświetlane jako pracujące mięśnie. */
-enum class Segment { TORSO, UPPER_ARM, FOREARM, THIGH, SHIN }
+/** Partie podświetlane jako pracujące mięśnie. CHEST/BACK/CORE/GLUTES to strefy tułowia (przód/tył), DELT — bark. */
+enum class Segment { TORSO, CHEST, BACK, CORE, GLUTES, DELT, UPPER_ARM, FOREARM, THIGH, SHIN }
 
 data class Pose(
     val hip: Offset,
@@ -138,7 +138,19 @@ sealed interface Prop {
     data class Cable(val anchor: Offset) : Prop
     data object Handle : Prop
     data object Dumbbells : Prop
+
+    /** Hantla tylko w bliższej dłoni (ćwiczenia jednorącz). */
+    data object DumbbellNear : Prop
+
+    /** Hantle chwytem młotkowym — gryf prostopadle do przedramienia. */
+    data object HammerDumbbells : Prop
     data object DumbbellVertical : Prop
+
+    /** Ramię maszyny od osi obrotu do dłoni (za postacią). */
+    data class Lever(val pivot: Offset) : Prop
+
+    /** Ramię maszyny od osi obrotu do kostki (np. prostowanie nóg). */
+    data class LeverToAnkle(val pivot: Offset) : Prop
     data object PlateOnHips : Prop
     data object Roller : Prop
     data object Bar : Prop

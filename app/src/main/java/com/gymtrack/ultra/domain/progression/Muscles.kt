@@ -38,6 +38,11 @@ object MuscleMap {
         "db_bicep_curl" to MuscleTargets(setOf(MuscleGroup.BICEPS)),
         "tricep_pushdown" to MuscleTargets(setOf(MuscleGroup.TRICEPS)),
         "plank" to MuscleTargets(setOf(MuscleGroup.CORE)),
+        "chest_press_machine" to MuscleTargets(setOf(MuscleGroup.CHEST), setOf(MuscleGroup.TRICEPS, MuscleGroup.SHOULDERS)),
+        "one_arm_db_row" to MuscleTargets(setOf(MuscleGroup.BACK), setOf(MuscleGroup.BICEPS)),
+        "leg_extension" to MuscleTargets(setOf(MuscleGroup.LEGS)),
+        "knee_raise" to MuscleTargets(setOf(MuscleGroup.CORE)),
+        "hammer_curl" to MuscleTargets(setOf(MuscleGroup.BICEPS)),
     )
 
     fun targetsOf(exerciseId: String): MuscleTargets = map[exerciseId] ?: MuscleTargets(emptySet())

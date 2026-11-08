@@ -4,7 +4,7 @@ import androidx.compose.ui.geometry.Offset
 
 /**
  * Animacje wszystkich ćwiczeń z biblioteki (klucz = id ćwiczenia z DefaultContent).
- * Wygenerowane z prototypu pozy (scratchpad/anim/ex.py) i sprawdzone wizualnie klatka po klatce.
+ * Wygenerowane z prototypu póz (scratchpad/anim/ex2.py) i sprawdzone wizualnie klatka po klatce.
  * Układ 100×100, podłoga na y≈88; ruch start → end → start w pętli.
  */
 object ExerciseMotions {
@@ -17,7 +17,7 @@ object ExerciseMotions {
         "goblet_squat" to ExerciseMotion(
             view = View.SIDE,
             start = Pose(
-                hip = Offset(48f, 46f),
+                hip = Offset(48f, 45.1f),
                 lean = 3f,
                 handNear = Offset(57f, 23f),
                 handFar = Offset(56f, 24f),
@@ -32,7 +32,7 @@ object ExerciseMotions {
                 footNear = Offset(50f, 88f),
                 footFar = Offset(50f, 88f),
             ),
-            highlight = setOf(Segment.THIGH),
+            highlight = setOf(Segment.THIGH, Segment.GLUTES),
             props = listOf(
                 Prop.DumbbellVertical,
             ),
@@ -61,7 +61,7 @@ object ExerciseMotions {
                 kneeNear = 1f,
                 kneeFar = 1f,
             ),
-            highlight = setOf(Segment.TORSO, Segment.UPPER_ARM),
+            highlight = setOf(Segment.CHEST),
             props = listOf(
                 Prop.Block(47f, 66f, 56f, 6f),
                 Prop.Block(30f, 77f, 4f, 22f),
@@ -95,7 +95,7 @@ object ExerciseMotions {
                 elbowFar = -1f,
                 footAngle = -80f,
             ),
-            highlight = setOf(Segment.TORSO),
+            highlight = setOf(Segment.BACK),
             props = listOf(
                 Prop.Block(38f, 75f, 26f, 10f),
                 Prop.Block(90f, 62f, 8f, 52f),
@@ -129,7 +129,7 @@ object ExerciseMotions {
                 kneeNear = 1f,
                 kneeFar = 1f,
             ),
-            highlight = setOf(Segment.THIGH, Segment.TORSO),
+            highlight = setOf(Segment.GLUTES, Segment.THIGH),
             props = listOf(
                 Prop.Block(22f, 68f, 26f, 8f),
                 Prop.Block(14f, 79f, 4f, 20f),
@@ -142,26 +142,26 @@ object ExerciseMotions {
         "lateral_raise" to ExerciseMotion(
             view = View.FRONT,
             start = Pose(
-                hip = Offset(50f, 46f),
+                hip = Offset(50f, 45.5f),
                 lean = 0f,
                 handNear = Offset(60f, 49f),
                 handFar = Offset(40f, 49f),
                 footNear = Offset(55f, 88f),
                 footFar = Offset(45f, 88f),
                 elbowFar = -1f,
-                kneeNear = 1f,
+                kneeFar = 1f,
             ),
             end = Pose(
-                hip = Offset(50f, 46f),
+                hip = Offset(50f, 45.5f),
                 lean = 0f,
                 handNear = Offset(85f, 23f),
                 handFar = Offset(15f, 23f),
                 footNear = Offset(55f, 88f),
                 footFar = Offset(45f, 88f),
                 elbowFar = -1f,
-                kneeNear = 1f,
+                kneeFar = 1f,
             ),
-            highlight = setOf(Segment.UPPER_ARM),
+            highlight = setOf(Segment.DELT),
             props = listOf(
                 Prop.Dumbbells,
             ),
@@ -195,7 +195,7 @@ object ExerciseMotions {
                 footNear = Offset(97f, 80f),
                 footFar = Offset(77f, 61f),
             ),
-            highlight = setOf(Segment.TORSO),
+            highlight = setOf(Segment.CORE),
             scale = 0.85f,
             cueOut = "Wyprostuj rękę i przeciwną nogę",
             cueBack = "Wróć, plecy przy ziemi",
@@ -203,7 +203,7 @@ object ExerciseMotions {
         "db_romanian_deadlift" to ExerciseMotion(
             view = View.SIDE,
             start = Pose(
-                hip = Offset(47f, 46f),
+                hip = Offset(47f, 45.15f),
                 lean = 2f,
                 handNear = Offset(51f, 72f),
                 handFar = Offset(50f, 73f),
@@ -218,7 +218,7 @@ object ExerciseMotions {
                 footNear = Offset(50f, 88f),
                 footFar = Offset(50f, 88f),
             ),
-            highlight = setOf(Segment.THIGH),
+            highlight = setOf(Segment.GLUTES, Segment.THIGH),
             props = listOf(
                 Prop.Dumbbells,
             ),
@@ -247,7 +247,7 @@ object ExerciseMotions {
                 elbowNear = -1f,
                 elbowFar = -1f,
             ),
-            highlight = setOf(Segment.TORSO, Segment.UPPER_ARM),
+            highlight = setOf(Segment.BACK),
             props = listOf(
                 Prop.Block(40f, 72f, 26f, 8f),
                 Prop.Block(62f, 60f, 10f, 5f),
@@ -276,7 +276,7 @@ object ExerciseMotions {
                 footNear = Offset(68f, 88f),
                 footFar = Offset(32f, 84f),
             ),
-            highlight = setOf(Segment.THIGH),
+            highlight = setOf(Segment.THIGH, Segment.GLUTES),
             props = listOf(
                 Prop.Dumbbells,
             ),
@@ -305,7 +305,7 @@ object ExerciseMotions {
                 elbowNear = -1f,
                 elbowFar = -1f,
             ),
-            highlight = setOf(Segment.UPPER_ARM),
+            highlight = setOf(Segment.DELT),
             props = listOf(
                 Prop.Block(40f, 72f, 26f, 8f),
                 Prop.Block(33f, 50f, 5f, 40f),
@@ -318,7 +318,7 @@ object ExerciseMotions {
         "face_pull" to ExerciseMotion(
             view = View.SIDE,
             start = Pose(
-                hip = Offset(44f, 46f),
+                hip = Offset(44f, 45.24f),
                 lean = -4f,
                 handNear = Offset(74f, 22f),
                 handFar = Offset(73f, 23f),
@@ -328,7 +328,7 @@ object ExerciseMotions {
                 elbowFar = -1f,
             ),
             end = Pose(
-                hip = Offset(44f, 46f),
+                hip = Offset(44f, 45.24f),
                 lean = -6f,
                 handNear = Offset(48f, 14f),
                 handFar = Offset(47f, 15f),
@@ -337,7 +337,7 @@ object ExerciseMotions {
                 elbowNear = -1f,
                 elbowFar = -1f,
             ),
-            highlight = setOf(Segment.UPPER_ARM),
+            highlight = setOf(Segment.DELT, Segment.BACK),
             props = listOf(
                 Prop.Block(92f, 50f, 6f, 80f),
                 Prop.Cable(Offset(89f, 20f)),
@@ -373,7 +373,7 @@ object ExerciseMotions {
                 kneeFar = 1f,
                 farForearm = 0.15f,
             ),
-            highlight = setOf(Segment.TORSO),
+            highlight = setOf(Segment.CORE),
             scale = 0.95f,
             liftFirst = true,
             cueOut = "Unieś biodra",
@@ -399,7 +399,7 @@ object ExerciseMotions {
                 footFar = Offset(61f, 37f),
                 footAngle = -50f,
             ),
-            highlight = setOf(Segment.THIGH),
+            highlight = setOf(Segment.THIGH, Segment.GLUTES),
             props = listOf(
                 Prop.Block(22f, 64f, 34f, 8f, -60f),
                 Prop.Block(34f, 78f, 26f, 6f),
@@ -433,7 +433,7 @@ object ExerciseMotions {
                 kneeNear = 1f,
                 kneeFar = 1f,
             ),
-            highlight = setOf(Segment.TORSO, Segment.UPPER_ARM),
+            highlight = setOf(Segment.CHEST, Segment.DELT),
             props = listOf(
                 Prop.Block(43f, 64f, 34f, 7f, -55f),
                 Prop.Block(58f, 76f, 22f, 6f),
@@ -461,7 +461,7 @@ object ExerciseMotions {
                 footNear = Offset(34f, 88f),
                 footFar = Offset(30f, 88f),
             ),
-            highlight = setOf(Segment.TORSO),
+            highlight = setOf(Segment.BACK),
             props = listOf(
                 Prop.Block(60f, 60f, 36f, 7f, 52f),
                 Prop.Block(62f, 76f, 4f, 24f),
@@ -511,7 +511,7 @@ object ExerciseMotions {
         "db_bicep_curl" to ExerciseMotion(
             view = View.SIDE,
             start = Pose(
-                hip = Offset(46f, 46f),
+                hip = Offset(46f, 45.24f),
                 lean = 0f,
                 handNear = Offset(48f, 48f),
                 handFar = Offset(47f, 49f),
@@ -519,14 +519,14 @@ object ExerciseMotions {
                 footFar = Offset(50f, 88f),
             ),
             end = Pose(
-                hip = Offset(46f, 46f),
+                hip = Offset(46f, 45.24f),
                 lean = 0f,
                 handNear = Offset(56f, 22f),
                 handFar = Offset(55f, 23f),
                 footNear = Offset(50f, 88f),
                 footFar = Offset(50f, 88f),
             ),
-            highlight = setOf(Segment.UPPER_ARM, Segment.FOREARM),
+            highlight = setOf(Segment.UPPER_ARM),
             props = listOf(
                 Prop.Dumbbells,
             ),
@@ -537,7 +537,7 @@ object ExerciseMotions {
         "tricep_pushdown" to ExerciseMotion(
             view = View.SIDE,
             start = Pose(
-                hip = Offset(44f, 46f),
+                hip = Offset(44f, 45.47f),
                 lean = 10f,
                 handNear = Offset(58f, 28f),
                 handFar = Offset(57f, 29f),
@@ -545,14 +545,14 @@ object ExerciseMotions {
                 footFar = Offset(50f, 88f),
             ),
             end = Pose(
-                hip = Offset(44f, 46f),
+                hip = Offset(44f, 45.47f),
                 lean = 10f,
                 handNear = Offset(55f, 49f),
                 handFar = Offset(54f, 50f),
                 footNear = Offset(50f, 88f),
                 footFar = Offset(50f, 88f),
             ),
-            highlight = setOf(Segment.UPPER_ARM, Segment.FOREARM),
+            highlight = setOf(Segment.UPPER_ARM),
             props = listOf(
                 Prop.Block(70f, 48f, 6f, 84f),
                 Prop.Cable(Offset(68f, 6f)),
@@ -586,11 +586,157 @@ object ExerciseMotions {
                 kneeFar = 1f,
                 footAngle = 110f,
             ),
-            highlight = setOf(Segment.TORSO),
+            highlight = setOf(Segment.CORE),
             scale = 0.9f,
             isometric = true,
             cueOut = "Napnij brzuch",
             cueBack = "Oddychaj spokojnie",
+        ),
+        "chest_press_machine" to ExerciseMotion(
+            view = View.SIDE,
+            start = Pose(
+                hip = Offset(40f, 66f),
+                lean = -8f,
+                handNear = Offset(47f, 44f),
+                handFar = Offset(46f, 45f),
+                footNear = Offset(64f, 88f),
+                footFar = Offset(62f, 88f),
+            ),
+            end = Pose(
+                hip = Offset(40f, 66f),
+                lean = -8f,
+                handNear = Offset(64f, 44f),
+                handFar = Offset(63f, 45f),
+                footNear = Offset(64f, 88f),
+                footFar = Offset(62f, 88f),
+            ),
+            highlight = setOf(Segment.CHEST),
+            props = listOf(
+                Prop.Block(40f, 72f, 26f, 7f),
+                Prop.Block(30f, 47f, 5f, 40f, -8f),
+                Prop.Block(40f, 81f, 5f, 16f),
+                Prop.Lever(Offset(22f, 42f)),
+                Prop.Handle,
+            ),
+            liftFirst = true,
+            cueOut = "Wypchnij uchwyty przed siebie",
+            cueBack = "Wróć powoli",
+        ),
+        "one_arm_db_row" to ExerciseMotion(
+            view = View.SIDE,
+            start = Pose(
+                hip = Offset(36f, 44f),
+                lean = 85f,
+                handNear = Offset(66f, 70f),
+                handFar = Offset(64f, 69.5f),
+                footNear = Offset(40f, 87.5f),
+                footFar = Offset(16f, 67.5f),
+            ),
+            end = Pose(
+                hip = Offset(36f, 44f),
+                lean = 85f,
+                handNear = Offset(51f, 52f),
+                handFar = Offset(64f, 69.5f),
+                footNear = Offset(40f, 87.5f),
+                footFar = Offset(16f, 67.5f),
+            ),
+            highlight = setOf(Segment.BACK),
+            props = listOf(
+                Prop.Block(42f, 72f, 50f, 6f),
+                Prop.Block(24f, 81f, 4f, 16f),
+                Prop.Block(60f, 81f, 4f, 16f),
+                Prop.DumbbellNear,
+            ),
+            liftFirst = true,
+            cueOut = "Przyciągnij łokieć w górę",
+            cueBack = "Opuść powoli",
+        ),
+        "leg_extension" to ExerciseMotion(
+            view = View.SIDE,
+            start = Pose(
+                hip = Offset(38f, 64f),
+                lean = -10f,
+                handNear = Offset(41f, 69f),
+                handFar = Offset(40f, 70f),
+                footNear = Offset(60f, 85f),
+                footFar = Offset(59f, 85.5f),
+            ),
+            end = Pose(
+                hip = Offset(38f, 64f),
+                lean = -10f,
+                handNear = Offset(41f, 69f),
+                handFar = Offset(40f, 70f),
+                footNear = Offset(81f, 60f),
+                footFar = Offset(80f, 60.5f),
+                footAngle = -75f,
+            ),
+            highlight = setOf(Segment.THIGH),
+            props = listOf(
+                Prop.Block(41f, 70f, 28f, 7f),
+                Prop.Block(28f, 47f, 5f, 38f, -10f),
+                Prop.Block(40f, 80f, 5f, 18f),
+                Prop.LeverToAnkle(Offset(60f, 66f)),
+                Prop.Roller,
+            ),
+            liftFirst = true,
+            cueOut = "Wyprostuj nogi",
+            cueBack = "Opuść powoli",
+        ),
+        "knee_raise" to ExerciseMotion(
+            view = View.SIDE,
+            start = Pose(
+                hip = Offset(44f, 40f),
+                lean = 0f,
+                handNear = Offset(58f, 28.5f),
+                handFar = Offset(57f, 29f),
+                footNear = Offset(47f, 83f),
+                footFar = Offset(46f, 83f),
+            ),
+            end = Pose(
+                hip = Offset(44f, 40f),
+                lean = 0f,
+                handNear = Offset(58f, 28.5f),
+                handFar = Offset(57f, 29f),
+                footNear = Offset(66f, 61f),
+                footFar = Offset(65f, 61.5f),
+            ),
+            highlight = setOf(Segment.CORE),
+            props = listOf(
+                Prop.Block(33f, 50f, 5f, 78f),
+                Prop.Block(38.5f, 30f, 4f, 36f),
+                Prop.Block(54f, 32f, 22f, 4f),
+                Prop.Block(65f, 60f, 4f, 56f),
+            ),
+            scale = 0.85f,
+            liftFirst = true,
+            cueOut = "Unieś kolana do bioder",
+            cueBack = "Opuść powoli, bez bujania",
+        ),
+        "hammer_curl" to ExerciseMotion(
+            view = View.SIDE,
+            start = Pose(
+                hip = Offset(46f, 45.24f),
+                lean = 0f,
+                handNear = Offset(48f, 48f),
+                handFar = Offset(47f, 49f),
+                footNear = Offset(50f, 88f),
+                footFar = Offset(50f, 88f),
+            ),
+            end = Pose(
+                hip = Offset(46f, 45.24f),
+                lean = 0f,
+                handNear = Offset(56f, 22f),
+                handFar = Offset(55f, 23f),
+                footNear = Offset(50f, 88f),
+                footFar = Offset(50f, 88f),
+            ),
+            highlight = setOf(Segment.UPPER_ARM),
+            props = listOf(
+                Prop.HammerDumbbells,
+            ),
+            liftFirst = true,
+            cueOut = "Uginaj, kciuki w górę",
+            cueBack = "Opuść powoli",
         ),
     )
 }

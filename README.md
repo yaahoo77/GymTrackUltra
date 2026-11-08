@@ -4,7 +4,7 @@ Natywna aplikacja treningowa na Androida — Kotlin, Jetpack Compose, Material 3
 Styl **Cyber Lime Dark**: prawie czarne tło, jeden neonowy akcent, duże liczby, satysfakcjonujące mikrointerakcje.
 Działa w 100% offline, bez konta, wszystkie dane zostają na telefonie.
 
-## Stan projektu (v0.5)
+## Stan projektu (v0.6)
 
 | Etap | Zakres | Status |
 |---|---|---|
@@ -28,9 +28,12 @@ Działa w 100% offline, bez konta, wszystkie dane zostają na telefonie.
   Ranga konta z poziomu, osobna ranga dla 8 partii mięśni. Autorskie odznaki rysowane w Compose.
 - **Seria**: liczy treningi; wystarczą 2 w tygodniu, dni wolne nie przerywają. Tarcza za każde 4 pełne tygodnie.
 - **Wyzwania tygodnia**: 3 rotujące zadania z nagrodą XP, liczone z prawdziwych danych.
-- **Animacje ćwiczeń**: każde z 19 ćwiczeń ma własną animowaną postać (karta techniki, trening na żywo, plan).
-  Pracujące mięśnie świecą na lime, tempo pokazuje kontrolowane opuszczanie, pod spodem podpis fazy ruchu.
-  Postać liczona jest odwrotną kinematyką z dwóch póz — stopy zostają na ziemi, łokcie i kolana zginają się naturalnie.
+- **Plan z klasyków**: FBW A/B/C wyłącznie z ćwiczeń, które robi każdy na siłowni (suwnica, wyciskanie hantli,
+  ściąganie drążka, maszyna do klatki, wiosłowanie, prostowanie/uginanie nóg, uginanie ramion, unoszenie kolan, deska).
+  Stary plan z v0.1–v0.5 podmienia się sam przy aktualizacji; historia zostaje.
+- **Animacje ćwiczeń**: każde z 24 ćwiczeń w bibliotece ma własną animowaną postać-manekina (karta techniki, trening
+  na żywo, plan). Pracujące partie świecą na lime (klatka, plecy, brzuch, pośladki, barki, ręce, uda), tempo pokazuje
+  kontrolowane opuszczanie, pod spodem podpis fazy ruchu. Postać liczona jest odwrotną kinematyką z dwóch póz.
 - **Iskra**: płomyk-maskotka na ekranie Start — mruga, kołysze się, mówi, co dziś w planie, po dotknięciu podskakuje
   i podaje wskazówkę. Na podsumowaniu treningu skacze z radości. W dzień wolny drzemie.
 - **Więcej życia**: karty wjeżdżają po kolei, paski i liczniki napełniają się od zera, połysk na odznakach rang
@@ -90,7 +93,7 @@ app/src/main/java/com/gymtrack/ultra/
 │   ├── relation/      Relations.kt — plan z ćwiczeniami, sesja z seriami
 │   └── dao/           ExerciseDao · PlanDao · SessionDao · ProgressDao
 ├── data/
-│   ├── seed/          DefaultContent (plan FBW + 19 ćwiczeń) · DatabaseSeeder
+│   ├── seed/          DefaultContent (plan FBW + 24 ćwiczenia) · DatabaseSeeder (podmiana starego planu)
 │   ├── mapper/        encje ↔ modele domeny
 │   ├── repository/    PlanRepositoryImpl · ProgressRepositoryImpl
 │   └── settings/      SettingsRepositoryImpl (DataStore)
@@ -110,7 +113,7 @@ app/src/main/java/com/gymtrack/ultra/
     ├── theme/         Color · Type · Shape · Motion (ograniczenie ruchu) · Theme
     ├── components/    NeonButton · GtCard · GradientProgressBar · Iskra · Life (połysk, wjazd, liczniki) · …
     ├── rank/          odznaki rang rysowane w Compose
-    └── exercise/      ExerciseRig (szkielet + IK) · ExerciseMotions (19 ćwiczeń) · ExerciseAnimation
+    └── exercise/      ExerciseRig (szkielet + IK) · ExerciseMotions (24 ćwiczenia) · ExerciseDrawing · ExerciseAnimation
 ```
 
 ## Baza danych (Room, wersja 1)
