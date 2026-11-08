@@ -36,6 +36,10 @@ object GtIcons {
     val Lock: ImageVector by lazy { stroke("Lock", "M6 11 H18 V20 H6 Z M8 11 V8 A4 4 0 0 1 16 8 V11") }
     val Plus: ImageVector by lazy { stroke("Plus", "M12 5 V19 M5 12 H19", width = 2.4f) }
     val Close: ImageVector by lazy { stroke("Close", "M6 6 L18 18 M18 6 L6 18") }
+    val Edit: ImageVector by lazy { stroke("Edit", "M4 20 H8 L19 9 L15 5 L4 16 Z M13 7 L17 11") }
+    val ArrowUp: ImageVector by lazy { stroke("ArrowUp", "M12 19 V5 M6 11 L12 5 L18 11") }
+    val ArrowDown: ImageVector by lazy { stroke("ArrowDown", "M12 5 V19 M6 13 L12 19 L18 13") }
+    val Swap: ImageVector by lazy { stroke("Swap", "M4 8 H18 M14 4 L18 8 L14 12 M20 16 H6 M10 12 L6 16 L10 20") }
     val Egg: ImageVector by lazy { stroke("Egg", "M12 3 C8 3 5 9 5 14 A7 7 0 0 0 19 14 C19 9 16 3 12 3 Z") }
     val Sparkle: ImageVector by lazy {
         stroke("Sparkle", "M12 3 L13.8 10.2 L21 12 L13.8 13.8 L12 21 L10.2 13.8 L3 12 L10.2 10.2 Z")

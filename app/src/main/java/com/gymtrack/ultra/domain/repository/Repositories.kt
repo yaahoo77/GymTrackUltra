@@ -1,5 +1,9 @@
 package com.gymtrack.ultra.domain.repository
 
+import java.time.DayOfWeek
+import com.gymtrack.ultra.domain.progression.MuscleGroup
+import com.gymtrack.ultra.domain.model.TrackingType
+import com.gymtrack.ultra.domain.model.Exercise
 import com.gymtrack.ultra.domain.nutrition.FoodEntry
 import com.gymtrack.ultra.domain.model.LiveSession
 import com.gymtrack.ultra.domain.model.PlanDay
@@ -15,6 +19,23 @@ interface PlanRepository {
     fun observePlan(): Flow<List<PlanDay>>
     fun observePlanDay(id: Long): Flow<PlanDay?>
     suspend fun markTechniqueViewed(exerciseId: String)
+
+    /** Cała biblioteka ćwiczeń (wbudowane + własne). */
+    fun observeLibrary(): Flow<List<Exercise>>
+
+    suspend fun updateTargets(planExerciseId: Long, sets: Int, min: Int, max: Int, restSeconds: Int)
+    suspend fun replaceExercise(planExerciseId: Long, exerciseId: String)
+    suspend fun removeExercise(planExerciseId: Long)
+    suspend fun addExercise(dayId: Long, exerciseId: String)
+
+    /** Przesuwa ćwiczenie w obrębie dnia o [delta] pozycji (−1 w górę, +1 w dół). */
+    suspend fun moveExercise(planExerciseId: Long, delta: Int)
+
+    /** Tworzy własne ćwiczenie i zwraca jego id. */
+    suspend fun createCustomExercise(name: String, muscle: MuscleGroup, tracking: TrackingType): String
+
+    /** Przypisuje dni tygodnia do kolejnych dni planu (A, B, C…) w podanej kolejności. */
+    suspend fun assignWeekdays(days: List<DayOfWeek>)
 }
 
 /** XP, poziomy, historia ukończonych sesji, osiągnięcia. */
@@ -37,6 +58,12 @@ interface WorkoutRepository {
 
     /** −10% ciężaru w niezaliczonych seriach; odblokowuje SMART LOAD. */
     suspend fun applyLighterLoad(sessionExerciseId: Long)
+
+    /**
+     * Zamiana ćwiczenia w trwającym treningu (np. maszyna zajęta). Tylko gdy żadna seria nie jest zaliczona.
+     * [alsoInPlan] = podmień też w planie tego dnia.
+     */
+    suspend fun swapExercise(sessionExerciseId: Long, exerciseId: String, alsoInPlan: Boolean)
 
     /** Zamyka trening, przyznaje XP, wyzwania i osiągnięcia. Zwraca id sesji do podsumowania. */
     suspend fun finish(sessionId: Long): Long

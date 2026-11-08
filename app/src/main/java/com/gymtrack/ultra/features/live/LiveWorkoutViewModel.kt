@@ -2,6 +2,8 @@ package com.gymtrack.ultra.features.live
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gymtrack.ultra.domain.repository.PlanRepository
+import com.gymtrack.ultra.domain.model.Exercise
 import com.gymtrack.ultra.core.format.Formatters
 import com.gymtrack.ultra.core.service.WorkoutServiceController
 import com.gymtrack.ultra.domain.model.LiveExercise
@@ -44,6 +46,7 @@ sealed interface LiveEvent {
 class LiveWorkoutViewModel @Inject constructor(
     private val workout: WorkoutRepository,
     private val rest: RestTimerRepository,
+    plan: PlanRepository,
     private val service: WorkoutServiceController,
 ) : ViewModel() {
 
@@ -58,6 +61,10 @@ class LiveWorkoutViewModel @Inject constructor(
     ) { session, timer, rev, isFinishing ->
         LiveUiState(isLoading = false, session = session, timer = timer, inputRevision = rev, isFinishing = isFinishing)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LiveUiState())
+
+    /** Biblioteka ćwiczeń do zamiany. */
+    val library: StateFlow<List<Exercise>> = plan.observeLibrary()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val _events = Channel<LiveEvent>(Channel.BUFFERED)
     val events: Flow<LiveEvent> = _events.receiveAsFlow()
@@ -127,6 +134,16 @@ class LiveWorkoutViewModel @Inject constructor(
             workout.applyLighterLoad(exercise.sessionExerciseId)
             revision.value += 1
             _events.send(LiveEvent.Message("Ciężar −10%. Dobra decyzja — technika przede wszystkim."))
+        }
+    }
+
+    fun onSwap(exercise: LiveExercise, newExerciseId: String, alsoInPlan: Boolean) {
+        launchSafely {
+            workout.swapExercise(exercise.sessionExerciseId, newExerciseId, alsoInPlan)
+            revision.value += 1
+            _events.send(
+                LiveEvent.Message(if (alsoInPlan) "Zamienione — także w planie." else "Zamienione na dziś. Plan bez zmian."),
+            )
         }
     }
 

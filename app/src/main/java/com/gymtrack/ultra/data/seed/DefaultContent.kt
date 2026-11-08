@@ -30,7 +30,7 @@ data class SeedPlanDay(
 )
 
 /**
- * Gotowy plan FBW 3 dni z klasycznych ćwiczeń + biblioteka 24 ćwiczeń z techniką i bezpieczeństwem.
+ * Gotowy plan FBW 3 dni z klasycznych ćwiczeń + biblioteka 25 ćwiczeń z techniką i bezpieczeństwem.
  * Teksty pisane z myślą także o nastolatkach: zero prób maksymalnych, ból = sygnał, by przerwać.
  */
 object DefaultContent {
@@ -437,6 +437,23 @@ object DefaultContent {
             safety = listOf(
                 "Nie bujaj tułowiem.",
                 "Lżej, ale czysto — to nie wyścig na ciężar.",
+            ),
+        ),
+        SeedExercise(
+            id = "overhead_tricep_extension",
+            namePl = "Prostowanie ramion za głową z hantlą",
+            nameEn = "Seated Overhead Dumbbell Extension",
+            muscleGroup = "Triceps",
+            technique = listOf(
+                "Usiądź na ławce z oparciem, chwyć jedną hantlę oburącz pod talerzem.",
+                "Unieś ją nad głowę, ręce prawie proste.",
+                "Opuść hantlę powoli za głowę — łokcie zostają skierowane w górę.",
+                "Wyprostuj ręce, wracając do pozycji nad głową.",
+            ),
+            safety = listOf(
+                "Zacznij lekko — ciężar przechodzi nad głową.",
+                "Brzuch napięty, nie wyginaj pleców w łuk.",
+                "Ból łokcia = mniejszy zakres ruchu albo zamiana na prostowanie na wyciągu.",
             ),
         ),
     )

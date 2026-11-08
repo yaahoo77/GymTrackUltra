@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gymtrack.ultra.ui.exercise.ExercisePickerSheet
 import com.gymtrack.ultra.core.format.Formatters
 import com.gymtrack.ultra.domain.model.LiveSession
 import com.gymtrack.ultra.domain.model.RestTimer
@@ -96,6 +97,8 @@ fun LiveWorkoutScreen(
     var showFinishDialog by rememberSaveable { mutableStateOf(false) }
     var techniqueFor by rememberSaveable { mutableStateOf<Long?>(null) }
     var noteFor by rememberSaveable { mutableStateOf<Long?>(null) }
+    var swapFor by rememberSaveable { mutableStateOf<Long?>(null) }
+    val library by viewModel.library.collectAsStateWithLifecycle()
     var restExpanded by rememberSaveable { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -158,6 +161,7 @@ fun LiveWorkoutScreen(
                 onFinishClick = { showFinishDialog = true },
                 onTechnique = { techniqueFor = it },
                 onNote = { noteFor = it },
+                onSwap = { swapFor = it },
                 onExpandRest = { restExpanded = true },
             )
         }
@@ -203,6 +207,22 @@ fun LiveWorkoutScreen(
         )
     }
 
+    val swapExercise = session?.exercises?.firstOrNull { it.sessionExerciseId == swapFor }
+    if (swapExercise != null) {
+        ExercisePickerSheet(
+            title = "Zamień ćwiczenie",
+            library = library,
+            current = swapExercise.exercise,
+            excludeIds = session?.exercises?.map { it.exercise.id }?.toSet().orEmpty(),
+            alsoInPlanDefault = false,
+            onPick = { picked, alsoInPlan ->
+                viewModel.onSwap(swapExercise, picked.id, alsoInPlan)
+                swapFor = null
+            },
+            onDismiss = { swapFor = null },
+        )
+    }
+
     val noteExercise = session?.exercises?.firstOrNull { it.sessionExerciseId == noteFor }
     if (noteExercise != null) {
         NoteDialog(
@@ -223,6 +243,7 @@ private fun LiveContent(
     onFinishClick: () -> Unit,
     onTechnique: (Long) -> Unit,
     onNote: (Long) -> Unit,
+    onSwap: (Long) -> Unit,
     onExpandRest: () -> Unit,
 ) {
     val now by produceState(System.currentTimeMillis()) {
@@ -311,6 +332,7 @@ private fun LiveContent(
                     onAddSet = { viewModel.onAddSet(exercise) },
                     onLighter = { viewModel.onLighter(exercise) },
                     onNote = { onNote(exercise.sessionExerciseId) },
+                    onSwap = { onSwap(exercise.sessionExerciseId) },
                     onTechnique = { onTechnique(exercise.sessionExerciseId) },
                 )
             }

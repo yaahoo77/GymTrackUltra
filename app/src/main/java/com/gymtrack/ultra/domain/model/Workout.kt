@@ -1,5 +1,6 @@
 package com.gymtrack.ultra.domain.model
 
+import com.gymtrack.ultra.domain.progression.LoadAdvice
 import com.gymtrack.ultra.domain.progression.AchievementDefinition
 import com.gymtrack.ultra.domain.progression.LevelProgress
 import com.gymtrack.ultra.domain.progression.MuscleGroup
@@ -35,6 +36,8 @@ data class LiveExercise(
     val sets: List<LiveSet>,
     /** Serie z ostatniego ukończonego treningu z tym ćwiczeniem. */
     val previous: List<PreviousSet>,
+    /** Podpowiedź ciężaru na dziś (podwójna progresja); null = brak danych albo ćwiczenie bez ciężaru. */
+    val advice: LoadAdvice? = null,
 ) {
     val completedSets: Int get() = sets.count { it.completed }
     val isDone: Boolean get() = completedSets >= targetSets

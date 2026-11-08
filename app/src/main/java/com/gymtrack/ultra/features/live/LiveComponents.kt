@@ -1,5 +1,7 @@
 package com.gymtrack.ultra.features.live
 
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
@@ -60,6 +62,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.gymtrack.ultra.domain.progression.LoadAdvice
 import com.gymtrack.ultra.core.format.Formatters
 import com.gymtrack.ultra.domain.model.LiveExercise
 import com.gymtrack.ultra.domain.model.LiveSet
@@ -76,6 +79,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /** Karta ćwiczenia w trakcie treningu: animacja ruchu, nagłówek, "ostatnio", serie, akcje. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun ExerciseCard(
     index: Int,
@@ -87,6 +91,7 @@ internal fun ExerciseCard(
     onAddSet: () -> Unit,
     onLighter: () -> Unit,
     onNote: () -> Unit,
+    onSwap: () -> Unit,
     onTechnique: () -> Unit,
 ) {
     val done = exercise.isDone
@@ -157,6 +162,25 @@ internal fun ExerciseCard(
                 previousLine(exercise)?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall, color = GtColors.TextMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
+                val advice = exercise.advice
+                if (advice is LoadAdvice.Increase && !done) {
+                    Row(
+                        Modifier
+                            .padding(top = 4.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(GtColors.LimeDim)
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    ) {
+                        Icon(GtIcons.Sparkle, contentDescription = null, tint = GtColors.Lime, modifier = Modifier.size(12.dp))
+                        Text(
+                            "Dziś +${Formatters.weightKg(advice.stepKg)} → ${Formatters.weightKg(advice.toKg)} (ostatnio ${advice.sets}×${advice.reps})",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = GtColors.Lime,
+                        )
+                    }
+                }
             }
             Box(
                 Modifier
@@ -194,10 +218,12 @@ internal fun ExerciseCard(
             ExerciseDoneBanner(exercise)
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             ActionChip("+ Seria", onAddSet)
             ActionChip("Lżej −10%", onLighter)
             ActionChip(if (exercise.note.isNullOrBlank()) "Notatka" else "Notatka ✓", onNote)
+            // Zamiana tylko przed pierwszą zaliczoną serią — maszyna zajęta albo jej brak.
+            if (exercise.sets.none { it.completed }) ActionChip("Zamień", onSwap)
         }
         exercise.note?.takeIf { it.isNotBlank() }?.let {
             Text("„$it”", style = MaterialTheme.typography.bodySmall, color = GtColors.TextSoft)

@@ -97,6 +97,13 @@ fun TechniqueSheet(
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SectionLabel("Technika")
+                if (exercise.technique.isEmpty()) {
+                    Text(
+                        "To Twoje własne ćwiczenie. Zapisz wskazówki w notatce podczas treningu — zobaczysz je następnym razem.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = GtColors.TextSecondary,
+                    )
+                }
                 exercise.technique.forEachIndexed { index, step ->
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
                         Box(

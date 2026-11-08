@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gymtrack.ultra.ui.exercise.ExercisePickerSheet
 import com.gymtrack.ultra.ui.components.shine
 import com.gymtrack.ultra.core.format.Formatters
 import com.gymtrack.ultra.domain.model.PlanDay
@@ -56,6 +57,9 @@ fun PlanDayScreen(
     LaunchedEffect(Unit) { viewModel.started.collect { onStarted() } }
     // Id ćwiczenia z otwartą kartą techniki — przetrwa obrót ekranu.
     var openExerciseId by rememberSaveable { mutableStateOf<String?>(null) }
+    var editId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var pickerFor by rememberSaveable { mutableStateOf<Long?>(null) } // -1 = dodawanie nowego ćwiczenia
+    val library by viewModel.library.collectAsStateWithLifecycle()
 
     when (val current = state) {
         PlanDayUiState.Loading -> Column(
@@ -83,6 +87,8 @@ fun PlanDayScreen(
                             openExerciseId = item.exercise.id
                             viewModel.onTechniqueOpened(item.exercise.id)
                         },
+                        onEdit = { item -> editId = item.id },
+                        onAdd = { pickerFor = ADD_NEW },
                     )
                 }
                 NeonButton(
@@ -93,6 +99,54 @@ fun PlanDayScreen(
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                         .fillMaxWidth()
                         .shine(enabled = !hasActive, delayMillis = 1600),
+                )
+            }
+            val exercises = current.day.exercises
+            val editing = exercises.firstOrNull { it.id == editId }
+            if (editing != null) {
+                val index = exercises.indexOf(editing)
+                EditPlanExerciseSheet(
+                    item = editing,
+                    canMoveUp = index > 0,
+                    canMoveDown = index < exercises.lastIndex,
+                    canRemove = exercises.size > 1,
+                    onSave = { sets, min, max, rest ->
+                        viewModel.updateTargets(editing, sets, min, max, rest)
+                        editId = null
+                    },
+                    onSwap = {
+                        pickerFor = editing.id
+                        editId = null
+                    },
+                    onMove = { delta -> viewModel.move(editing, delta) },
+                    onRemove = {
+                        viewModel.remove(editing)
+                        editId = null
+                    },
+                    onDismiss = { editId = null },
+                )
+            }
+            val picking = pickerFor
+            if (picking != null) {
+                val replacing = exercises.firstOrNull { it.id == picking }
+                ExercisePickerSheet(
+                    title = if (replacing != null) "Zamień ćwiczenie" else "Dodaj ćwiczenie",
+                    library = library,
+                    current = replacing?.exercise,
+                    excludeIds = exercises.map { it.exercise.id }.toSet(),
+                    onPick = { picked, _ ->
+                        if (replacing != null) viewModel.replace(replacing, picked.id) else viewModel.add(picked.id)
+                        pickerFor = null
+                    },
+                    onCreateCustom = if (replacing == null) {
+                        { name, muscle, tracking ->
+                            viewModel.createAndAdd(name, muscle, tracking)
+                            pickerFor = null
+                        }
+                    } else {
+                        null
+                    },
+                    onDismiss = { pickerFor = null },
                 )
             }
             val open = current.day.exercises.firstOrNull { it.exercise.id == openExerciseId }
@@ -112,6 +166,8 @@ private fun PlanDayContent(
     day: PlanDay,
     onBack: () -> Unit,
     onOpenTechnique: (PlanExercise) -> Unit,
+    onEdit: (PlanExercise) -> Unit,
+    onAdd: () -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -141,7 +197,10 @@ private fun PlanDayContent(
         }
         item(key = "warmup") { WarmupCard() }
         itemsIndexed(day.exercises, key = { _, item -> item.id }) { index, item ->
-            ExerciseRow(index = index, item = item, onClick = { onOpenTechnique(item) })
+            ExerciseRow(index = index, item = item, onClick = { onOpenTechnique(item) }, onEdit = { onEdit(item) })
+        }
+        item(key = "add") {
+            GhostButton("+ Dodaj ćwiczenie", onClick = onAdd, modifier = Modifier.fillMaxWidth())
         }
     }
 }
@@ -163,7 +222,7 @@ private fun WarmupCard() {
 }
 
 @Composable
-private fun ExerciseRow(index: Int, item: PlanExercise, onClick: () -> Unit) {
+private fun ExerciseRow(index: Int, item: PlanExercise, onClick: () -> Unit, onEdit: () -> Unit) {
     GtCard(
         onClick = onClick,
         onClickLabel = "Pokaż technikę: ${item.exercise.namePl}",
@@ -203,7 +262,9 @@ private fun ExerciseRow(index: Int, item: PlanExercise, onClick: () -> Unit) {
                     color = GtColors.TextSecondary,
                 )
             }
-            Icon(GtIcons.Info, contentDescription = null, tint = GtColors.TextSecondary, modifier = Modifier.size(20.dp))
+            IconSquareButton(icon = GtIcons.Edit, contentDescription = "Edytuj: ${item.exercise.namePl}", onClick = onEdit, size = 44.dp)
         }
     }
 }
+
+private const val ADD_NEW = -1L

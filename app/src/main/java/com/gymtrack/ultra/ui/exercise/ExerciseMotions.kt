@@ -738,5 +738,34 @@ object ExerciseMotions {
             cueOut = "Uginaj, kciuki w górę",
             cueBack = "Opuść powoli",
         ),
+        "overhead_tricep_extension" to ExerciseMotion(
+            view = View.SIDE,
+            start = Pose(
+                hip = Offset(42f, 66f),
+                lean = 0f,
+                handNear = Offset(43f, 10f),
+                handFar = Offset(42f, 11f),
+                footNear = Offset(64f, 88f),
+                footFar = Offset(62f, 88f),
+            ),
+            end = Pose(
+                hip = Offset(42f, 66f),
+                lean = 0f,
+                handNear = Offset(31f, 29.5f),
+                handFar = Offset(30f, 30.5f),
+                footNear = Offset(64f, 88f),
+                footFar = Offset(62f, 88f),
+            ),
+            highlight = setOf(Segment.UPPER_ARM),
+            props = listOf(
+                Prop.Block(40f, 72f, 26f, 8f),
+                Prop.Block(33f, 50f, 5f, 40f),
+                Prop.DumbbellVertical,
+            ),
+            scale = 0.9f,
+            liftFirst = true,
+            cueOut = "Wyprostuj ręce nad głową",
+            cueBack = "Opuść hantlę za głowę powoli",
+        ),
     )
 }

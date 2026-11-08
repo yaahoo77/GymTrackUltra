@@ -88,6 +88,9 @@ interface SessionDao {
     @Query("SELECT * FROM session_exercises WHERE id = :id")
     suspend fun getSessionExercise(id: Long): SessionExerciseEntity?
 
+    @Query("UPDATE session_exercises SET exerciseId = :exerciseId WHERE id = :id")
+    suspend fun updateSessionExerciseExercise(id: Long, exerciseId: String)
+
     @Query("SELECT * FROM set_logs WHERE id = :id")
     suspend fun getSet(id: Long): SetLogEntity?
 

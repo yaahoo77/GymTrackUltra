@@ -1,6 +1,8 @@
 package com.gymtrack.ultra.data.repository
 
 import androidx.room.withTransaction
+import com.gymtrack.ultra.domain.progression.LoadProgression
+import com.gymtrack.ultra.domain.progression.LoadAdvice
 import com.gymtrack.ultra.core.time.TimeProvider
 import com.gymtrack.ultra.core.time.WeekMath
 import com.gymtrack.ultra.data.mapper.toDomain
@@ -79,9 +81,10 @@ class WorkoutRepositoryImpl @Inject constructor(
                     sessionDao.lastCompletedSetsFor(se.exerciseId)
                         .map { PreviousSet(it.weightKg, it.reps, it.durationSeconds) }
                 }
+                val exercise = item.exercise.toDomain()
                 LiveExercise(
                     sessionExerciseId = se.id,
-                    exercise = item.exercise.toDomain(),
+                    exercise = exercise,
                     position = se.position,
                     targetSets = se.targetSets,
                     targetMin = se.targetMin,
@@ -92,6 +95,7 @@ class WorkoutRepositoryImpl @Inject constructor(
                         LiveSet(it.id, it.setIndex, it.weightKg, it.reps, it.durationSeconds, it.completed)
                     },
                     previous = previous,
+                    advice = LoadProgression.advise(se.exerciseId, exercise.trackingType, previous, se.targetSets, se.targetMax),
                 )
             }
         return LiveSession(
@@ -139,16 +143,26 @@ class WorkoutRepositoryImpl @Inject constructor(
             },
         )
         ids.forEachIndexed { i, sessionExerciseId ->
-            val pe = ordered[i].planExercise
+            val item = ordered[i]
+            val pe = item.planExercise
             val previous = sessionDao.lastCompletedSetsFor(pe.exerciseId)
+            val advice = LoadProgression.advise(
+                pe.exerciseId,
+                item.exercise.toDomain().trackingType,
+                previous.map { PreviousSet(it.weightKg, it.reps, it.durationSeconds) },
+                pe.targetSets,
+                pe.targetMax,
+            )
             sessionDao.insertSets(
                 (0 until pe.targetSets).map { index ->
-                    // Ciężar podpowiadamy z ostatniego treningu — wpisywanie to wtedy tylko potwierdzenie.
+                    // Ciężar podpowiadamy z ostatniego treningu — a gdy ostatnio wszystkie serie były na górze
+                    // zakresu, od razu o jeden mały krok wyżej (podwójna progresja).
                     val prev = previous.getOrNull(index) ?: previous.lastOrNull()
+                    val weight = if (advice is LoadAdvice.Increase) advice.toKg else prev?.weightKg
                     SetLogEntity(
                         sessionExerciseId = sessionExerciseId,
                         setIndex = index,
-                        weightKg = prev?.weightKg,
+                        weightKg = weight,
                         reps = null,
                         durationSeconds = null,
                         completed = false,
@@ -188,6 +202,35 @@ class WorkoutRepositoryImpl @Inject constructor(
                 ),
             ),
         )
+    }
+
+    override suspend fun swapExercise(sessionExerciseId: Long, exerciseId: String, alsoInPlan: Boolean) {
+        db.withTransaction {
+            val item = sessionDao.getSessionExercise(sessionExerciseId) ?: return@withTransaction
+            if (item.exerciseId == exerciseId) return@withTransaction
+            val sets = sessionDao.getSets(sessionExerciseId)
+            if (sets.any { it.completed }) return@withTransaction // zaliczone serie zostają przy starym ćwiczeniu
+            val oldExerciseId = item.exerciseId
+            sessionDao.updateSessionExerciseExercise(sessionExerciseId, exerciseId)
+            // Ciężary z ostatniego razu z NOWYM ćwiczeniem; powtórzenia/czas czyścimy.
+            val previous = sessionDao.lastCompletedSetsFor(exerciseId)
+            sessionDao.updateSets(
+                sets.map { set ->
+                    val prev = previous.getOrNull(set.setIndex) ?: previous.lastOrNull()
+                    set.copy(weightKg = prev?.weightKg, reps = null, durationSeconds = null)
+                },
+            )
+            previousCache.remove(exerciseId)
+            if (alsoInPlan) {
+                val planDayId = sessionDao.getSession(item.sessionId)?.planDayId
+                if (planDayId != null) {
+                    planDao.replaceInDay(planDayId, oldExerciseId, exerciseId)
+                    progressDao.insertUnlocks(
+                        listOf(AchievementUnlockEntity(Achievements.PLAN_ARCHITECT, time.now().toEpochMilli())),
+                    )
+                }
+            }
+        }
     }
 
     override suspend fun setWarmupDone(sessionId: Long, done: Boolean) {

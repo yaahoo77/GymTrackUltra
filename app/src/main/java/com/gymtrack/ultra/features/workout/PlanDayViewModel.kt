@@ -4,6 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.gymtrack.ultra.domain.progression.MuscleGroup
+import com.gymtrack.ultra.domain.model.TrackingType
+import com.gymtrack.ultra.domain.model.PlanExercise
+import com.gymtrack.ultra.domain.model.Exercise
 import com.gymtrack.ultra.domain.model.PlanDay
 import com.gymtrack.ultra.domain.repository.PlanRepository
 import com.gymtrack.ultra.domain.repository.WorkoutRepository
@@ -49,6 +53,29 @@ class PlanDayViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching { workoutRepository.startOrResume(dayId) }.onSuccess { _started.send(Unit) }
         }
+    }
+
+    val library: StateFlow<List<Exercise>> = planRepository.observeLibrary()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun updateTargets(item: PlanExercise, sets: Int, min: Int, max: Int, rest: Int) =
+        edit { planRepository.updateTargets(item.id, sets, min, max, rest) }
+
+    fun replace(item: PlanExercise, exerciseId: String) = edit { planRepository.replaceExercise(item.id, exerciseId) }
+
+    fun remove(item: PlanExercise) = edit { planRepository.removeExercise(item.id) }
+
+    fun move(item: PlanExercise, delta: Int) = edit { planRepository.moveExercise(item.id, delta) }
+
+    fun add(exerciseId: String) = edit { planRepository.addExercise(dayId, exerciseId) }
+
+    fun createAndAdd(name: String, muscle: MuscleGroup, tracking: TrackingType) = edit {
+        val id = planRepository.createCustomExercise(name, muscle, tracking)
+        planRepository.addExercise(dayId, id)
+    }
+
+    private fun edit(block: suspend () -> Unit) {
+        viewModelScope.launch { runCatching { block() } }
     }
 
     /** Zapis do osiągnięcia TECHNIQUE MASTER — liczy się pierwsze otwarcie każdego ćwiczenia. */

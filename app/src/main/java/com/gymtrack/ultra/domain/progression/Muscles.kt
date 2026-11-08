@@ -1,5 +1,7 @@
 package com.gymtrack.ultra.domain.progression
 
+import com.gymtrack.ultra.domain.plan.CustomExercises
+
 enum class MuscleGroup(val label: String) {
     CHEST("Klatka"),
     BACK("Plecy"),
@@ -43,9 +45,12 @@ object MuscleMap {
         "leg_extension" to MuscleTargets(setOf(MuscleGroup.LEGS)),
         "knee_raise" to MuscleTargets(setOf(MuscleGroup.CORE)),
         "hammer_curl" to MuscleTargets(setOf(MuscleGroup.BICEPS)),
+        "overhead_tricep_extension" to MuscleTargets(setOf(MuscleGroup.TRICEPS)),
     )
 
-    fun targetsOf(exerciseId: String): MuscleTargets = map[exerciseId] ?: MuscleTargets(emptySet())
+    fun targetsOf(exerciseId: String): MuscleTargets = map[exerciseId]
+        ?: CustomExercises.muscleOf(exerciseId)?.let { MuscleTargets(setOf(it)) }
+        ?: MuscleTargets(emptySet())
 
     fun exercisesTraining(muscle: MuscleGroup): List<String> =
         map.filterValues { muscle in it.primary }.keys.toList()
