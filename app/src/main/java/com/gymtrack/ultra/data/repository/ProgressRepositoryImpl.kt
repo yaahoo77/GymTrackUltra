@@ -1,5 +1,7 @@
 package com.gymtrack.ultra.data.repository
 
+import kotlinx.coroutines.flow.map
+import com.gymtrack.ultra.domain.model.LoggedSet
 import com.gymtrack.ultra.core.time.TimeProvider
 import com.gymtrack.ultra.data.mapper.toLogged
 import com.gymtrack.ultra.data.mapper.toSummary
@@ -75,6 +77,9 @@ class ProgressRepositoryImpl @Inject constructor(
             .flowOn(Dispatchers.Default)
             .distinctUntilChanged()
     }
+
+    override fun observeLoggedSets(): Flow<List<LoggedSet>> =
+        sessionDao.observeCompletedSetRows().map { rows -> rows.map { it.toLogged() } }
 
     override fun observeCompletedSetsSince(from: Instant?): Flow<Int> =
         sessionDao.observeCompletedSetsInFinishedSessionsSince(from?.toEpochMilli() ?: 0L)

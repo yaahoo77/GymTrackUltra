@@ -1,5 +1,9 @@
 package com.gymtrack.ultra.features.profile
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -121,6 +125,15 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
                         "i możesz ją usunąć w dzienniku białka.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = GtColors.TextSoft,
+                )
+                Text(
+                    "Przejdź kreator startowy jeszcze raz",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = GtColors.Lime,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(role = Role.Button, onClick = viewModel::restartOnboarding)
+                        .padding(vertical = 8.dp),
                 )
                 Text(
                     "Wersja ${BuildConfig.VERSION_NAME}",

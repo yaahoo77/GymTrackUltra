@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">GymTrack Ultra</string>
+    <string name="widget_name">GymTrack: dziś</string>
+    <string name="widget_description">Dzisiejszy trening, seria i białko</string>
 </resources>

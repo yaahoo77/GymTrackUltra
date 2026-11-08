@@ -1,6 +1,7 @@
 package com.gymtrack.ultra.data.repository
 
 import androidx.room.withTransaction
+import com.gymtrack.ultra.widget.WidgetUpdater
 import com.gymtrack.ultra.domain.progression.LoadProgression
 import com.gymtrack.ultra.domain.progression.LoadAdvice
 import com.gymtrack.ultra.core.time.TimeProvider
@@ -51,6 +52,7 @@ import kotlin.math.roundToInt
 class WorkoutRepositoryImpl @Inject constructor(
     private val db: GymDatabase,
     private val time: TimeProvider,
+    private val widgets: WidgetUpdater,
 ) : WorkoutRepository {
 
     private val sessionDao = db.sessionDao()
@@ -110,7 +112,9 @@ class WorkoutRepositoryImpl @Inject constructor(
 
     // ── Zapis serii ─────────────────────────────────────────────────────
 
-    override suspend fun startOrResume(planDayId: Long): Long = db.withTransaction {
+    override suspend fun startOrResume(planDayId: Long): Long = startOrResumeInternal(planDayId).also { widgets.refresh() }
+
+    private suspend fun startOrResumeInternal(planDayId: Long): Long = db.withTransaction {
         sessionDao.getActiveSession()?.let { return@withTransaction it.id }
 
         val day = planDao.getPlanDay(planDayId) ?: error("Plan day $planDayId not found")
@@ -261,11 +265,14 @@ class WorkoutRepositoryImpl @Inject constructor(
             sessionDao.deleteExercisesOfSession(sessionId)
             sessionDao.deleteSession(sessionId)
         }
+        widgets.refresh()
     }
 
     // ── Zakończenie: XP, wyzwania, osiągnięcia ──────────────────────────
 
-    override suspend fun finish(sessionId: Long): Long = db.withTransaction {
+    override suspend fun finish(sessionId: Long): Long = finishInternal(sessionId).also { widgets.refresh() }
+
+    private suspend fun finishInternal(sessionId: Long): Long = db.withTransaction {
         val detail = sessionDao.getSessionDetail(sessionId) ?: error("Session $sessionId not found")
         check(detail.exercises.any { e -> e.sets.any { it.completed } }) { "No completed sets" }
 

@@ -6,14 +6,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,7 +42,10 @@ import com.gymtrack.ultra.ui.theme.GtDurations
 import com.gymtrack.ultra.ui.theme.LocalGtMotion
 
 @Composable
-fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
+fun StatsScreen(
+    onOpenHistory: () -> Unit,
+    viewModel: StatsViewModel = hiltViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     LazyColumn(
@@ -48,6 +54,30 @@ fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item(key = "header") { ScreenHeader(title = "Statystyki") }
+        item(key = "history") {
+            GtCard(onClick = onOpenHistory, onClickLabel = "Otwórz historię treningów", verticalSpacing = 0.dp) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(
+                        Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(GtColors.Elevated),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(GtIcons.Clock, contentDescription = null, tint = GtColors.Lime, modifier = Modifier.size(20.dp))
+                    }
+                    Column(Modifier.weight(1f)) {
+                        Text("Historia treningów", style = MaterialTheme.typography.titleMedium, color = GtColors.TextPrimary)
+                        Text(
+                            if (state.hasAnyHistory) "Każdy trening seria po serii, z rekordami" else "Pojawi się po pierwszym treningu",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = GtColors.TextSecondary,
+                        )
+                    }
+                    Icon(GtIcons.ChevronRight, contentDescription = null, tint = GtColors.TextSecondary, modifier = Modifier.size(20.dp))
+                }
+            }
+        }
         item(key = "range") { RangeSelector(state.range, onSelect = viewModel::selectRange) }
         item(key = "tiles") {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

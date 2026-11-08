@@ -4,7 +4,7 @@ Natywna aplikacja treningowa na Androida — Kotlin, Jetpack Compose, Material 3
 Styl **Cyber Lime Dark**: prawie czarne tło, jeden neonowy akcent, duże liczby, satysfakcjonujące mikrointerakcje.
 Działa w 100% offline, bez konta, wszystkie dane zostają na telefonie.
 
-## Stan projektu (v0.7)
+## Stan projektu (v0.8)
 
 | Etap | Zakres | Status |
 |---|---|---|
@@ -13,7 +13,8 @@ Działa w 100% offline, bez konta, wszystkie dane zostają na telefonie.
 | 4–5 | Trening na żywo, zapis serii, timer przerwy w tle, podsumowanie | ✅ |
 | 6 | Gamifikacja: rangi, seria z płomieniem, wyzwania, rekordy, awanse | ✅ (część) |
 | 6 | Animacje ćwiczeń, maskotka Iskra, „życie” w interfejsie | ✅ |
-| — | Onboarding, wykresy w Statystykach, eksport/import, mapa mięśni | ⏭ następne |
+| — | Onboarding, historia, mapa mięśni, widżet, edycja planu, podpowiedź ciężaru | ✅ |
+| — | Wykresy w Statystykach, eksport/import, skaner kodów kreskowych | ⏭ następne |
 
 ### Co działa
 
@@ -38,6 +39,14 @@ Działa w 100% offline, bez konta, wszystkie dane zostają na telefonie.
   (ISSN 2017: 1,4–2,0 g/kg dla trenujących; Morton i in. 2018: plateau ok. 1,6 g/kg) — albo wpisujesz cel ręcznie.
   Karta „Białko dziś” na Start, dziennik z 20 typowymi produktami jednym kliknięciem, własne wpisy, cofanie,
   wykres 7 dni. Bez kalorii i bez wykresów wagi. Waga zostaje na telefonie i da się ją usunąć.
+- **Podpowiedź ciężaru**: podwójna progresja — gdy ostatnio wszystkie serie były na górze zakresu, trening startuje
+  z ciężarem o jeden mały krok wyżej (hantle +1–2 kg, maszyny +5 kg, suwnica +10 kg). Nigdy skoki „na rekord”.
+- **Zamiana ćwiczeń i edycja planu**: „Zamień” w trakcie treningu (maszyna zajęta), z opcją podmiany w planie;
+  edycja serii, zakresu i przerwy, kolejność, usuwanie, dodawanie i własne ćwiczenia.
+- **Historia treningów**: lista po miesiącach (czas, serie, objętość, XP, rekordy) i szczegóły każdej sesji.
+- **Mapa mięśni**: sylwetka z przodu i z tyłu, partie w kolorze swojej rangi; dotknięcie otwiera szczegóły.
+- **Onboarding**: 5 kroków do pominięcia — imię, cel, dni treningowe (przypisanie A/B/C), białko, wrażenia.
+- **Widżet** (Glance): dzisiejszy trening, seria i białko na ekranie głównym.
 - **Iskra**: płomyk-maskotka na ekranie Start — mruga, kołysze się, mówi, co dziś w planie, po dotknięciu podskakuje
   i podaje wskazówkę. Na podsumowaniu treningu skacze z radości. W dzień wolny drzemie.
 - **Więcej życia**: karty wjeżdżają po kolei, paski i liczniki napełniają się od zera, połysk na odznakach rang

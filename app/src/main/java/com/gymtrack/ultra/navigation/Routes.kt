@@ -24,6 +24,10 @@ import kotlinx.serialization.Serializable
 /** Dziennik białka — otwierany z karty na ekranie Start. */
 @Serializable data object NutritionRoute
 
+/** Historia treningów (ze Statystyk) i szczegóły jednej sesji. */
+@Serializable data object HistoryRoute
+@Serializable data class HistoryDetailRoute(val sessionId: Long)
+
 enum class TopLevelDestination(
     val route: Any,
     val label: String,

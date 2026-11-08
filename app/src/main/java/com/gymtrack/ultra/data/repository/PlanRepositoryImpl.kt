@@ -1,6 +1,7 @@
 package com.gymtrack.ultra.data.repository
 
 import androidx.room.withTransaction
+import com.gymtrack.ultra.widget.WidgetUpdater
 import com.gymtrack.ultra.core.time.TimeProvider
 import com.gymtrack.ultra.data.mapper.toDomain
 import com.gymtrack.ultra.database.GymDatabase
@@ -32,6 +33,7 @@ class PlanRepositoryImpl @Inject constructor(
     private val exerciseDao: ExerciseDao,
     private val progressDao: ProgressDao,
     private val time: TimeProvider,
+    private val widgets: WidgetUpdater,
 ) : PlanRepository {
 
     override fun observePlan(): Flow<List<PlanDay>> =
@@ -158,6 +160,7 @@ class PlanRepositoryImpl @Inject constructor(
                 planDao.updateDayOfWeek(day.id, weekday.value)
             }
         }
+        widgets.refresh()
     }
 
     private suspend fun reindex(items: List<PlanExerciseEntity>) {

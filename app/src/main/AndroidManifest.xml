@@ -38,6 +38,19 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Workout session timer with rest countdown" />
         </service>
+
+        <!-- Widżet na ekran główny: dzisiejszy trening, seria i białko. -->
+        <receiver
+            android:name=".widget.GymWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/gym_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

@@ -1,5 +1,6 @@
 package com.gymtrack.ultra.data.repository
 
+import com.gymtrack.ultra.widget.WidgetUpdater
 import com.gymtrack.ultra.core.time.TimeProvider
 import com.gymtrack.ultra.database.dao.FoodDao
 import com.gymtrack.ultra.database.entity.FoodEntryEntity
@@ -17,6 +18,7 @@ import javax.inject.Singleton
 class NutritionRepositoryImpl @Inject constructor(
     private val dao: FoodDao,
     private val time: TimeProvider,
+    private val widgets: WidgetUpdater,
 ) : NutritionRepository {
 
     override fun observeEntries(days: Int): Flow<List<FoodEntry>> {
@@ -30,7 +32,7 @@ class NutritionRepositoryImpl @Inject constructor(
     override suspend fun add(name: String, proteinGrams: Int): Long {
         val grams = proteinGrams.coerceIn(1, ProteinCalculator.MAX_ENTRY_GRAMS)
         val cleanName = name.trim().take(MAX_NAME).ifBlank { "Posiłek" }
-        return dao.insert(
+        return insert(
             FoodEntryEntity(
                 epochDay = time.today().toEpochDay(),
                 name = cleanName,
@@ -40,7 +42,12 @@ class NutritionRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun delete(id: Long) = dao.delete(id)
+    private suspend fun insert(entry: FoodEntryEntity): Long = dao.insert(entry).also { widgets.refresh() }
+
+    override suspend fun delete(id: Long) {
+        dao.delete(id)
+        widgets.refresh()
+    }
 
     private fun FoodEntryEntity.toDomain() = FoodEntry(
         id = id,

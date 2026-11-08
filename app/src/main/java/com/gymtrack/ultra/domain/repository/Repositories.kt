@@ -1,6 +1,7 @@
 package com.gymtrack.ultra.domain.repository
 
 import java.time.DayOfWeek
+import com.gymtrack.ultra.domain.model.LoggedSet
 import com.gymtrack.ultra.domain.progression.MuscleGroup
 import com.gymtrack.ultra.domain.model.TrackingType
 import com.gymtrack.ultra.domain.model.Exercise
@@ -44,6 +45,9 @@ interface ProgressRepository {
 
     /** Zaliczone serie w ukończonych treningach od [from] (null = cały okres). */
     fun observeCompletedSetsSince(from: Instant?): Flow<Int>
+
+    /** Wszystkie zaliczone serie z ukończonych treningów — historia i szczegóły sesji. */
+    fun observeLoggedSets(): Flow<List<LoggedSet>>
 }
 
 /** Trening na żywo: każda zmiana zapisuje się od razu — przerwany trening da się przywrócić. */

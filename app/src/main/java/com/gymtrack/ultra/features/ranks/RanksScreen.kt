@@ -44,6 +44,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import com.gymtrack.ultra.ui.components.SectionLabel
+import com.gymtrack.ultra.ui.rank.MuscleMapView
 import com.gymtrack.ultra.ui.components.rememberAppearRegistry
 import com.gymtrack.ultra.ui.components.appear
 import com.gymtrack.ultra.ui.components.shine
@@ -179,6 +181,23 @@ private fun MusclesTab(state: RanksUiState, onOpenMuscle: (MuscleRank) -> Unit) 
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         item(key = "account") { Box(Modifier.appear(appearRegistry, "account", 0)) { AccountCard(state.progress.level) } }
+        item(key = "map") {
+            Box(Modifier.appear(appearRegistry, "map", 1)) {
+                GtCard(verticalSpacing = 10.dp) {
+                    SectionLabel("Mapa mięśni")
+                    MuscleMapView(
+                        muscles = state.progress.gamification.muscles,
+                        onSelect = { muscle -> muscles.firstOrNull { it.muscle == muscle }?.let(onOpenMuscle) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Text(
+                        "Kolor partii = jej ranga. Szare jeszcze czekają na pierwsze serie. Dotknij, żeby zobaczyć szczegóły.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = GtColors.TextMuted,
+                    )
+                }
+            }
+        }
         item(key = "title") {
             Text(
                 "Każda partia ma własną rangę. Rośnie z seriami z planu i z pobitymi rekordami.",
@@ -188,7 +207,7 @@ private fun MusclesTab(state: RanksUiState, onOpenMuscle: (MuscleRank) -> Unit) 
             )
         }
         itemsIndexed(muscles, key = { _, it -> it.muscle.name }) { index, rank ->
-            Box(Modifier.appear(appearRegistry, rank.muscle.name, index + 1)) {
+            Box(Modifier.appear(appearRegistry, rank.muscle.name, index + 2)) {
                 MuscleRankRow(rank, onClick = { onOpenMuscle(rank) })
             }
         }

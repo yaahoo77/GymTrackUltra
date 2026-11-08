@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gymtrack.ultra.domain.model.UserSettings
+import com.gymtrack.ultra.features.onboarding.OnboardingScreen
 import com.gymtrack.ultra.navigation.GymAppScaffold
 import com.gymtrack.ultra.ui.components.Wordmark
 import com.gymtrack.ultra.ui.theme.GtColors
@@ -46,16 +47,27 @@ fun GymTrackRoot(viewModel: MainViewModel = hiltViewModel()) {
                 .fillMaxSize()
                 .background(GtColors.Background),
         ) {
+            val screen = when {
+                current !is AppState.Ready -> RootScreen.LAUNCH
+                !current.settings.onboardingCompleted -> RootScreen.ONBOARDING
+                else -> RootScreen.APP
+            }
             Crossfade(
-                targetState = current is AppState.Ready,
+                targetState = screen,
                 animationSpec = tween(if (motion.reduced) 0 else 350),
                 label = "appState",
-            ) { ready ->
-                if (ready) GymAppScaffold() else LaunchScreen()
+            ) { target ->
+                when (target) {
+                    RootScreen.LAUNCH -> LaunchScreen()
+                    RootScreen.ONBOARDING -> OnboardingScreen()
+                    RootScreen.APP -> GymAppScaffold()
+                }
             }
         }
     }
 }
+
+private enum class RootScreen { LAUNCH, ONBOARDING, APP }
 
 /** Ekran startowy na czas przygotowania bazy (zwykle ułamek sekundy). */
 @Composable
